@@ -1,0 +1,32 @@
+[
+  {
+    "method": "Shortest Path",
+    "scenario": "K4",
+    "final_path": "P1",
+    "avg_throughput_mbps": 3.7,
+    "avg_latency_ms": 67.85,
+    "avg_jitter_ms": 8.6,
+    "avg_loss_pct": 5.79,
+    "reroute_time_sec": 0.0
+  },
+  {
+    "method": "Static / ECMP",
+    "scenario": "K4",
+    "final_path": "P1/P3",
+    "avg_throughput_mbps": 5.05,
+    "avg_latency_ms": 49.3,
+    "avg_jitter_ms": 5.95,
+    "avg_loss_pct": 3.5,
+    "reroute_time_sec": 0.0
+  },
+  {
+    "method": "ML-Adaptive QoS (Proposed)",
+    "scenario": "K4",
+    "final_path": "P2",
+    "avg_throughput_mbps": 7.91,
+    "avg_latency_ms": 32.93,
+    "avg_jitter_ms": 1.7,
+    "avg_loss_pct": 0.33,
+    "reroute_time_sec": 1.8
+  }
+]

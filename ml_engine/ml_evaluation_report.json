@@ -1,0 +1,228 @@
+[
+  {
+    "model_name": "Ngưỡng cố định (Threshold)",
+    "target": "label_now",
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
+    "confusion_matrix": [
+      [
+        528,
+        0
+      ],
+      [
+        0,
+        552
+      ]
+    ],
+    "inference_time_ms": 0.0006,
+    "train_time_sec": 0.0
+  },
+  {
+    "model_name": "Logistic Regression",
+    "target": "label_now",
+    "accuracy": 0.9944,
+    "precision": 0.9928,
+    "recall": 0.9964,
+    "f1_score": 0.9946,
+    "roc_auc": 1.0,
+    "confusion_matrix": [
+      [
+        524,
+        4
+      ],
+      [
+        2,
+        550
+      ]
+    ],
+    "inference_time_ms": 0.0109,
+    "train_time_sec": 0.529,
+    "feature_importances": {}
+  },
+  {
+    "model_name": "Random Forest",
+    "target": "label_now",
+    "accuracy": 0.9991,
+    "precision": 1.0,
+    "recall": 0.9982,
+    "f1_score": 0.9991,
+    "roc_auc": 1.0,
+    "confusion_matrix": [
+      [
+        528,
+        0
+      ],
+      [
+        1,
+        551
+      ]
+    ],
+    "inference_time_ms": 0.0684,
+    "train_time_sec": 0.584,
+    "feature_importances": {
+      "throughput_mbps": 0.0126,
+      "utilization_pct": 0.0033,
+      "latency_ms": 0.2563,
+      "jitter_ms": 0.067,
+      "loss_pct": 0.1975,
+      "util_rolling_mean": 0.0211,
+      "util_rolling_std": 0.0014,
+      "util_rolling_max": 0.0464,
+      "util_diff": 0.0003,
+      "latency_rolling_mean": 0.1408,
+      "latency_rolling_max": 0.1213,
+      "loss_rolling_mean": 0.132
+    }
+  },
+  {
+    "model_name": "Gradient Boosting",
+    "target": "label_now",
+    "accuracy": 0.9991,
+    "precision": 1.0,
+    "recall": 0.9982,
+    "f1_score": 0.9991,
+    "roc_auc": 0.9991,
+    "confusion_matrix": [
+      [
+        528,
+        0
+      ],
+      [
+        1,
+        551
+      ]
+    ],
+    "inference_time_ms": 0.0029,
+    "train_time_sec": 0.884,
+    "feature_importances": {
+      "throughput_mbps": 0.0014,
+      "utilization_pct": 0.0054,
+      "latency_ms": 0.8233,
+      "jitter_ms": 0.0,
+      "loss_pct": 0.1699,
+      "util_rolling_mean": 0.0,
+      "util_rolling_std": 0.0,
+      "util_rolling_max": 0.0,
+      "util_diff": 0.0,
+      "latency_rolling_mean": 0.0,
+      "latency_rolling_max": 0.0,
+      "loss_rolling_mean": 0.0
+    }
+  },
+  {
+    "model_name": "Ngưỡng cố định (Threshold)",
+    "target": "label_pred",
+    "accuracy": 0.9833,
+    "precision": 0.9928,
+    "recall": 0.9751,
+    "f1_score": 0.9838,
+    "roc_auc": 0.9837,
+    "confusion_matrix": [
+      [
+        514,
+        4
+      ],
+      [
+        14,
+        548
+      ]
+    ],
+    "inference_time_ms": 0.0009,
+    "train_time_sec": 0.0
+  },
+  {
+    "model_name": "Logistic Regression",
+    "target": "label_pred",
+    "accuracy": 0.9722,
+    "precision": 0.9926,
+    "recall": 0.9537,
+    "f1_score": 0.9728,
+    "roc_auc": 0.9903,
+    "confusion_matrix": [
+      [
+        514,
+        4
+      ],
+      [
+        26,
+        536
+      ]
+    ],
+    "inference_time_ms": 0.0012,
+    "train_time_sec": 0.595,
+    "feature_importances": {}
+  },
+  {
+    "model_name": "Random Forest",
+    "target": "label_pred",
+    "accuracy": 0.9917,
+    "precision": 0.9929,
+    "recall": 0.9911,
+    "f1_score": 0.992,
+    "roc_auc": 0.9893,
+    "confusion_matrix": [
+      [
+        514,
+        4
+      ],
+      [
+        5,
+        557
+      ]
+    ],
+    "inference_time_ms": 0.0247,
+    "train_time_sec": 0.74,
+    "feature_importances": {
+      "throughput_mbps": 0.0174,
+      "utilization_pct": 0.007,
+      "latency_ms": 0.1631,
+      "jitter_ms": 0.0582,
+      "loss_pct": 0.1583,
+      "util_rolling_mean": 0.0309,
+      "util_rolling_std": 0.0037,
+      "util_rolling_max": 0.0524,
+      "util_diff": 0.003,
+      "latency_rolling_mean": 0.1573,
+      "latency_rolling_max": 0.1886,
+      "loss_rolling_mean": 0.1601
+    }
+  },
+  {
+    "model_name": "Gradient Boosting",
+    "target": "label_pred",
+    "accuracy": 0.9898,
+    "precision": 0.9911,
+    "recall": 0.9893,
+    "f1_score": 0.9902,
+    "roc_auc": 0.9905,
+    "confusion_matrix": [
+      [
+        513,
+        5
+      ],
+      [
+        6,
+        556
+      ]
+    ],
+    "inference_time_ms": 0.0052,
+    "train_time_sec": 2.013,
+    "feature_importances": {
+      "throughput_mbps": 0.0006,
+      "utilization_pct": 0.0021,
+      "latency_ms": 0.4202,
+      "jitter_ms": 0.001,
+      "loss_pct": 0.521,
+      "util_rolling_mean": 0.0311,
+      "util_rolling_std": 0.0043,
+      "util_rolling_max": 0.0033,
+      "util_diff": 0.0035,
+      "latency_rolling_mean": 0.0031,
+      "latency_rolling_max": 0.0093,
+      "loss_rolling_mean": 0.0005
+    }
+  }
+]

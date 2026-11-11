@@ -1,32 +1,29 @@
 [
   {
     "method": "Shortest Path",
-    "scenario": "K4",
-    "final_path": "P1",
-    "avg_throughput_mbps": 3.7,
-    "avg_latency_ms": 67.85,
-    "avg_jitter_ms": 8.6,
-    "avg_loss_pct": 5.79,
+    "method_short": "Shortest",
+    "avg_tp": 3.54,
+    "avg_lat": 72.01,
+    "avg_jit": 8.32,
+    "avg_loss": 5.85,
     "reroute_time_sec": 0.0
   },
   {
     "method": "Static / ECMP",
-    "scenario": "K4",
-    "final_path": "P1/P3",
-    "avg_throughput_mbps": 5.05,
-    "avg_latency_ms": 49.3,
-    "avg_jitter_ms": 5.95,
-    "avg_loss_pct": 3.5,
+    "method_short": "Static",
+    "avg_tp": 5.02,
+    "avg_lat": 49.13,
+    "avg_jit": 5.65,
+    "avg_loss": 3.18,
     "reroute_time_sec": 0.0
   },
   {
     "method": "ML-Adaptive QoS (Proposed)",
-    "scenario": "K4",
-    "final_path": "P2",
-    "avg_throughput_mbps": 7.91,
-    "avg_latency_ms": 32.93,
-    "avg_jitter_ms": 1.7,
-    "avg_loss_pct": 0.33,
+    "method_short": "Proposed ML",
+    "avg_tp": 8.29,
+    "avg_lat": 30.71,
+    "avg_jit": 1.17,
+    "avg_loss": 0.02,
     "reroute_time_sec": 1.8
   }
 ]

@@ -9,220 +9,220 @@
     "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        528,
+        6844,
         0
       ],
       [
         0,
-        552
+        273
       ]
     ],
-    "inference_time_ms": 0.0006,
+    "inference_time_ms": 0.0001,
     "train_time_sec": 0.0
   },
   {
     "model_name": "Logistic Regression",
     "target": "label_now",
-    "accuracy": 0.9944,
-    "precision": 0.9928,
-    "recall": 0.9964,
-    "f1_score": 0.9946,
+    "accuracy": 0.9994,
+    "precision": 1.0,
+    "recall": 0.9853,
+    "f1_score": 0.9926,
     "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        524,
-        4
+        6844,
+        0
       ],
       [
-        2,
-        550
+        4,
+        269
       ]
     ],
-    "inference_time_ms": 0.0109,
-    "train_time_sec": 0.529,
+    "inference_time_ms": 0.0001,
+    "train_time_sec": 0.264,
     "feature_importances": {}
   },
   {
     "model_name": "Random Forest",
     "target": "label_now",
-    "accuracy": 0.9991,
+    "accuracy": 1.0,
     "precision": 1.0,
-    "recall": 0.9982,
-    "f1_score": 0.9991,
+    "recall": 1.0,
+    "f1_score": 1.0,
     "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        528,
+        6844,
         0
       ],
       [
-        1,
-        551
+        0,
+        273
       ]
     ],
-    "inference_time_ms": 0.0684,
-    "train_time_sec": 0.584,
+    "inference_time_ms": 0.0015,
+    "train_time_sec": 0.673,
     "feature_importances": {
-      "throughput_mbps": 0.0126,
-      "utilization_pct": 0.0033,
-      "latency_ms": 0.2563,
-      "jitter_ms": 0.067,
-      "loss_pct": 0.1975,
-      "util_rolling_mean": 0.0211,
-      "util_rolling_std": 0.0014,
-      "util_rolling_max": 0.0464,
-      "util_diff": 0.0003,
-      "latency_rolling_mean": 0.1408,
-      "latency_rolling_max": 0.1213,
-      "loss_rolling_mean": 0.132
+      "throughput_mbps": 0.0263,
+      "utilization_pct": 0.0096,
+      "latency_ms": 0.1995,
+      "jitter_ms": 0.0575,
+      "loss_pct": 0.2385,
+      "util_rolling_mean": 0.0222,
+      "util_rolling_std": 0.0011,
+      "util_rolling_max": 0.0518,
+      "util_diff": 0.0046,
+      "latency_rolling_mean": 0.1,
+      "latency_rolling_max": 0.1391,
+      "loss_rolling_mean": 0.1499
     }
   },
   {
     "model_name": "Gradient Boosting",
     "target": "label_now",
-    "accuracy": 0.9991,
+    "accuracy": 1.0,
     "precision": 1.0,
-    "recall": 0.9982,
-    "f1_score": 0.9991,
-    "roc_auc": 0.9991,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        528,
+        6844,
         0
       ],
       [
-        1,
-        551
+        0,
+        273
       ]
     ],
-    "inference_time_ms": 0.0029,
-    "train_time_sec": 0.884,
+    "inference_time_ms": 0.0007,
+    "train_time_sec": 1.814,
     "feature_importances": {
-      "throughput_mbps": 0.0014,
-      "utilization_pct": 0.0054,
-      "latency_ms": 0.8233,
-      "jitter_ms": 0.0,
-      "loss_pct": 0.1699,
+      "throughput_mbps": 0.0018,
+      "utilization_pct": 0.0058,
+      "latency_ms": 0.0002,
+      "jitter_ms": 0.0001,
+      "loss_pct": 0.9904,
       "util_rolling_mean": 0.0,
       "util_rolling_std": 0.0,
       "util_rolling_max": 0.0,
       "util_diff": 0.0,
       "latency_rolling_mean": 0.0,
       "latency_rolling_max": 0.0,
-      "loss_rolling_mean": 0.0
+      "loss_rolling_mean": 0.0016
     }
   },
   {
     "model_name": "Ngưỡng cố định (Threshold)",
     "target": "label_pred",
-    "accuracy": 0.9833,
-    "precision": 0.9928,
-    "recall": 0.9751,
-    "f1_score": 0.9838,
-    "roc_auc": 0.9837,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        514,
-        4
+        6844,
+        0
       ],
       [
-        14,
-        548
+        0,
+        273
       ]
     ],
-    "inference_time_ms": 0.0009,
+    "inference_time_ms": 0.0,
     "train_time_sec": 0.0
   },
   {
     "model_name": "Logistic Regression",
     "target": "label_pred",
-    "accuracy": 0.9722,
-    "precision": 0.9926,
-    "recall": 0.9537,
-    "f1_score": 0.9728,
-    "roc_auc": 0.9903,
+    "accuracy": 0.9996,
+    "precision": 1.0,
+    "recall": 0.989,
+    "f1_score": 0.9945,
+    "roc_auc": 0.9996,
     "confusion_matrix": [
       [
-        514,
-        4
+        6844,
+        0
       ],
       [
-        26,
-        536
+        3,
+        270
       ]
     ],
-    "inference_time_ms": 0.0012,
-    "train_time_sec": 0.595,
+    "inference_time_ms": 0.0002,
+    "train_time_sec": 0.333,
     "feature_importances": {}
   },
   {
     "model_name": "Random Forest",
     "target": "label_pred",
-    "accuracy": 0.9917,
-    "precision": 0.9929,
-    "recall": 0.9911,
-    "f1_score": 0.992,
-    "roc_auc": 0.9893,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        514,
-        4
+        6844,
+        0
       ],
       [
-        5,
-        557
+        0,
+        273
       ]
     ],
-    "inference_time_ms": 0.0247,
-    "train_time_sec": 0.74,
+    "inference_time_ms": 0.0016,
+    "train_time_sec": 0.959,
     "feature_importances": {
-      "throughput_mbps": 0.0174,
-      "utilization_pct": 0.007,
-      "latency_ms": 0.1631,
-      "jitter_ms": 0.0582,
-      "loss_pct": 0.1583,
-      "util_rolling_mean": 0.0309,
-      "util_rolling_std": 0.0037,
-      "util_rolling_max": 0.0524,
-      "util_diff": 0.003,
-      "latency_rolling_mean": 0.1573,
-      "latency_rolling_max": 0.1886,
-      "loss_rolling_mean": 0.1601
+      "throughput_mbps": 0.0259,
+      "utilization_pct": 0.0184,
+      "latency_ms": 0.0314,
+      "jitter_ms": 0.0093,
+      "loss_pct": 0.0309,
+      "util_rolling_mean": 0.1188,
+      "util_rolling_std": 0.0331,
+      "util_rolling_max": 0.1514,
+      "util_diff": 0.0039,
+      "latency_rolling_mean": 0.1687,
+      "latency_rolling_max": 0.2357,
+      "loss_rolling_mean": 0.1726
     }
   },
   {
     "model_name": "Gradient Boosting",
     "target": "label_pred",
-    "accuracy": 0.9898,
-    "precision": 0.9911,
-    "recall": 0.9893,
-    "f1_score": 0.9902,
-    "roc_auc": 0.9905,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
     "confusion_matrix": [
       [
-        513,
-        5
+        6844,
+        0
       ],
       [
-        6,
-        556
+        0,
+        273
       ]
     ],
-    "inference_time_ms": 0.0052,
-    "train_time_sec": 2.013,
+    "inference_time_ms": 0.0012,
+    "train_time_sec": 3.294,
     "feature_importances": {
-      "throughput_mbps": 0.0006,
-      "utilization_pct": 0.0021,
-      "latency_ms": 0.4202,
-      "jitter_ms": 0.001,
-      "loss_pct": 0.521,
-      "util_rolling_mean": 0.0311,
-      "util_rolling_std": 0.0043,
-      "util_rolling_max": 0.0033,
-      "util_diff": 0.0035,
-      "latency_rolling_mean": 0.0031,
-      "latency_rolling_max": 0.0093,
-      "loss_rolling_mean": 0.0005
+      "throughput_mbps": 0.0023,
+      "utilization_pct": 0.0022,
+      "latency_ms": 0.0019,
+      "jitter_ms": 0.0019,
+      "loss_pct": 0.0269,
+      "util_rolling_mean": 0.0059,
+      "util_rolling_std": 0.0148,
+      "util_rolling_max": 0.0425,
+      "util_diff": 0.0154,
+      "latency_rolling_mean": 0.0013,
+      "latency_rolling_max": 0.0143,
+      "loss_rolling_mean": 0.8707
     }
   }
 ]

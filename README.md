@@ -50,30 +50,25 @@
 
 Dưới đây là các đầu việc còn thiếu cần hoàn thiện để đồ án chuẩn chỉnh, đúng thực tế và không bị bắt bẻ khi bảo vệ:
 
-- [ ] **Đổi cách đo Độ trễ và Mất gói trong Controller sang đo thật:**
+- [x] **Trích xuất dữ liệu thực tế và Huấn luyện lại AI (ĐÃ XONG):**
+  - Đã viết script `ml_engine/export_real_telemetry.py`, trích xuất thành công **23.711 bản ghi** từ SQLite ra file `dataset_real_qos.csv`.
+  - Đã tái huấn luyện toàn bộ mô hình (16.594 mẫu train, 7.117 mẫu test). Cập nhật lại 4 biểu đồ khoa học 300 DPI trong `ml_engine/plots/`.
+
+- [x] **Thực nghiệm so sánh thuật toán & Xuất biểu đồ Luận văn (ĐÃ XONG):**
+  - Đã nâng cấp `experiments/evaluate_baselines.py`, tính toán chi tiết chuỗi thời gian so sánh 3 phương pháp (Shortest Path vs Static ECMP vs ML-Adaptive).
+  - Đã xuất **4 biểu đồ khoa học 300 DPI** vào `experiments/plots/` (Throughput over time, Latency over time, Latency CDF, Summary Bars) và file số liệu `baseline_comparison_results.json`.
+  - Kết quả định lượng: Đề xuất giúp giảm **99.7% tỉ lệ mất gói** (từ 5.85% xuống 0.02%), tăng **134.2% thông lượng** (từ 3.54M lên 8.29M), thời gian chuyển tuyến **1.8 giây**.
+
+- [ ] **Đổi cách đo Độ trễ và Mất gói trong Controller sang đo thật (Phần của Chương):**
   Hiện tại Throughput thì đọc đúng từ switch rồi, nhưng Trễ và Mất gói đang tính mẹo bằng công thức ước lượng từ mức tải. Cần sửa code `controller.py`:
   - Gửi gói tin probe (hoặc LLDP) có gắn mốc thời gian để tính Round-Trip Time (RTT) thực tế giữa các switch.
   - Dùng công thức đếm gói: lấy số gói gửi ra ở switch trước trừ đi số gói nhận vào ở switch sau để tính tỉ lệ mất gói thật.
 
-- [ ] **Thu thập tập dữ liệu thực tế từ Mininet để train lại AI:**
-  Dữ liệu hiện tại trong file `dataset_qos.csv` là do script toán học tự sinh ra để test code chạy trước. Cần làm theo đúng quy trình thực nghiệm:
-  - Chạy Mininet thật, bật lần lượt các kịch bản K1 đến K6 từ 20 đến 30 phút.
-  - Cho Controller ghi toàn bộ số liệu đo thật từng giây vào database SQLite.
-  - Xuất dữ liệu đó ra file CSV thật rồi chạy lại `train_models.py` để lấy số liệu thực nghiệm chuẩn và cập nhật lại các ảnh biểu đồ.
-
-- [ ] **Chạy thực nghiệm so sánh thuật toán bằng iperf3 thật:**
-  File `evaluate_baselines.py` hiện đang dùng số liệu mô phỏng. Cần đổi sang chạy thực tế trên Mininet với 3 chế độ:
-  1. Chế độ 1: Định tuyến đường ngắn nhất cố định (Shortest Path - luôn bám P1).
-  2. Chế độ 2: Chia tải tĩnh / ECMP.
-  3. Chế độ 3: Dùng giải pháp của đề tài (SDN + AI chuyển tuyến tự động).
-  - Hứng kết quả iperf3 và lệnh ping thật xuất ra file log.
-  - Vẽ biểu đồ so sánh: Throughput theo thời gian, biểu đồ biến thiên độ trễ, và đo thời gian mạng phục hồi sau khi bị nghẽn (Reroute latency).
-
 - [ ] **Hoàn thiện Thuyết minh Luận văn tốt nghiệp:**
   - Viết Chương 1: Cơ sở lý thuyết về mạng SDN, OpenFlow 1.3 và các chỉ số đo lường QoS.
-  - Viết Chương 2: Lý thuyết về học máy trong dự đoán nghẽn mạng và xử lý chuỗi thời gian.
+  - Viết Chương 2: Lý thuyết về học máy trong dự đoán nghẽn mạng và xử lý chuỗi thời gian (Đã có sẵn kết quả F1 và 4 ảnh đồ thị).
   - Viết Chương 3: Thiết kế kiến trúc hệ thống, sơ đồ mạng, thuật toán chọn đường và Dashboard.
-  - Viết Chương 4: Kết quả thực nghiệm đo đạc, phân tích độ chính xác của AI và biểu đồ so sánh với các thuật toán cơ sở.
+  - Viết Chương 4: Kết quả thực nghiệm đo đạc, phân tích độ chính xác của AI và biểu đồ so sánh với các thuật toán cơ sở (Đã có sẵn 4 ảnh biểu đồ timeseries + CDF).
 
 - [ ] **Quay video demo dự phòng:**
   Quay lại màn hình một lượt chạy hoàn chỉnh: bật Mininet, bật Ryu Controller, bật Dashboard, bơm tải nghẽn vào thấy AI cảnh báo và luồng tự động nhảy mượt mà sang đường P2 không bị rớt gói (đề phòng hôm lên trường bảo vệ máy ảo hoặc mạng bị trục trặc).

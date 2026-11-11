@@ -65,12 +65,17 @@ FEATURE_NAMES_VI = [
 ]
 
 def load_or_create_data():
-    """Tải dữ liệu từ CSV hoặc tự sinh nếu chưa tồn tại"""
+    """Tải dữ liệu từ dataset_real_qos.csv nếu có, nếu không thì dùng dataset_qos.csv"""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(cur_dir, "dataset_qos.csv")
-    if os.path.exists(csv_path):
-        print(f">>> Đọc dữ liệu từ: {csv_path}")
-        df = pd.read_csv(csv_path)
+    real_csv = os.path.join(cur_dir, "dataset_real_qos.csv")
+    synth_csv = os.path.join(cur_dir, "dataset_qos.csv")
+
+    if os.path.exists(real_csv):
+        print(f">>> [REAL DATASET] Đang sử dụng dữ liệu thực tế trích xuất từ SQLite: {real_csv}")
+        df = pd.read_csv(real_csv)
+    elif os.path.exists(synth_csv):
+        print(f">>> [SYNTH DATASET] Đọc dữ liệu từ: {synth_csv}")
+        df = pd.read_csv(synth_csv)
     else:
         df = generate_full_dataset(samples_per_scenario=600, save_to_db=True)
     return df

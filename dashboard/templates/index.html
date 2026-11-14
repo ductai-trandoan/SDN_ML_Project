@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- MANDATORY (dark-mode guide): Declare color-scheme before render to prevent FOUC -->
+    <!-- MANDATORY (dark-mode guide): Declare color-scheme early to avoid FOUC -->
     <meta name="color-scheme" content="dark">
-    <title>SDN_ML_QOS // TELEMETRY CONSOLE</title>
+    <title>SDN QoS Monitor & Adaptive Traffic Steering Console</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React 18 + Babel CDN (no build step needed for Flask template) -->
+    <!-- React 18 + Babel CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
-    <!-- Fonts -->
+    <!-- Fonts: Inter (UI) & JetBrains Mono (Data/Code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -33,615 +33,1010 @@
     </script>
 
     <style>
-        /* MANDATORY (dark-mode guide): color-scheme on :root controls viewport-wide native UI theming */
+        /* MANDATORY (dark-mode guide): Apply color-scheme to :root for viewport-wide theming */
         :root {
             color-scheme: dark;
+            accent-color: #3b82f6;
 
-            /* SECTION: DESIGN_TOKENS — Tier 1: Literal color palette */
-            --clr-bg-base:      #09090b;   /* zinc-950 */
-            --clr-bg-panel:     #18181b;   /* zinc-900 */
-            --clr-bg-cell:      #09090b;   /* zinc-950 */
-            --clr-border:       #27272a;   /* zinc-800 */
-            --clr-border-faint: #1c1c1f;   /* zinc-850 */
+            /* Flat Technical Palette (Pure Dark, No Blue/Purple Tint) */
+            --bg-base: #121212;
+            --bg-surface: #1a1a1a;
+            --bg-surface-alt: #222222;
+            --border-subtle: #2a2a2a;
+            --border-strong: #383838;
+            --border-focus: #555555;
 
-            /* Tier 2: Semantic status colors */
-            --clr-ok:      #10b981;   /* emerald-500 */
-            --clr-ok-dim:  #064e3b;   /* emerald-950 */
-            --clr-warn:    #f59e0b;   /* amber-500 */
-            --clr-warn-dim:#451a03;   /* amber-950 */
-            --clr-err:     #ef4444;   /* red-500 */
-            --clr-err-dim: #450a0a;   /* red-950 */
-            --clr-text-1:  #f4f4f5;   /* zinc-100 */
-            --clr-text-2:  #a1a1aa;   /* zinc-400 */
-            --clr-text-3:  #71717a;   /* zinc-500 */
-            --clr-text-4:  #3f3f46;   /* zinc-700 */
+            /* Status Signals */
+            --status-ok: #10b981;
+            --status-warn: #f59e0b;
+            --status-err: #ef4444;
+            --status-info: #3b82f6;
 
-            /* Tier 3: scrollbar (scrollbar-color guide) */
-            --scrollbar-thumb: #3f3f46;
-            --scrollbar-track: var(--clr-bg-base);
+            /* Typography */
+            --text-high: #f0f0f0;
+            --text-medium: #a0a0a0;
+            --text-muted: #666666;
 
-            /* scrollbar-color: standard property (Baseline Newly Available) */
+            /* MANDATORY (customize-scrollbar-color-and-thickness): 3:1 contrast against track/bg */
+            --scrollbar-thumb: #3e3e3e;
+            --scrollbar-track: #141414;
             scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
             scrollbar-width: thin;
         }
 
-        /* Legacy WebKit fallback as required by dark-mode guide */
+        /* WebKit Scrollbar Fallback */
         @supports not (scrollbar-color: auto) {
-            ::-webkit-scrollbar { width: 4px; height: 4px; }
-            ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-            ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: var(--scrollbar-track);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--scrollbar-thumb);
+                border-radius: 2px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #505050;
+            }
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            background-color: var(--clr-bg-base);
-            color: var(--clr-text-2);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            margin: 0;
-        }
-
-        /* SECTION: BORDER_RADIUS_RESET — Anti-AI-slop: no rounded corners */
+        /* Global Flat Reset: No box-shadows, strict sizing */
         *, *::before, *::after {
-            border-radius: 0 !important;
+            box-sizing: border-box;
             box-shadow: none !important;
         }
 
-        /* SECTION: TABLE_STYLES — responsive-table guide: sticky thead, container queries */
-        .flow-table-wrapper {
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-high);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .data-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Accessibility focus state */
+        button:focus-visible, summary:focus-visible, div[tabindex="0"]:focus-visible {
+            outline: 1px solid #ffffff;
+            outline-offset: 1px;
+        }
+
+        /* SECTION: RESPONSIVE TABLE (responsive-table guide) */
+        .table-scroller {
             overflow: auto;
             max-inline-size: 100%;
-            max-block-size: min(220px, 40vh);
+            max-block-size: min(320px, 45vh);
             container-type: inline-size;
-            /* responsive-table guide: role+tabindex for keyboard scrollability */
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+            scrollbar-width: thin;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-surface);
         }
 
-        .flow-table {
+        .flow-data-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
+            font-size: 11px;
         }
 
-        .flow-table thead th {
+        .flow-data-table thead th {
             position: sticky;
-            top: 0;
+            inset-block-start: 0;
             z-index: 2;
-            background: var(--clr-bg-base);
-            color: var(--clr-text-3);
+            background-color: #161616;
+            color: var(--text-muted);
+            padding: 6px 10px;
             text-transform: uppercase;
+            font-size: 10px;
+            font-weight: 600;
             letter-spacing: 0.05em;
-            padding: 4px 6px;
-            border-bottom: 1px solid var(--clr-border);
+            border-bottom: 1px solid var(--border-strong);
             white-space: nowrap;
         }
 
-        .flow-table tbody tr { border-bottom: 1px solid var(--clr-border-faint); }
-        .flow-table tbody tr:hover { background: var(--clr-bg-panel); }
-        .flow-table tbody td { padding: 3px 6px; white-space: nowrap; }
+        .flow-data-table tbody td {
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+        }
 
-        /* SECTION: BLINK_ANIM — Live indicator */
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .blink { animation: blink 1.4s ease-in-out infinite; }
+        .flow-data-table tbody tr:hover {
+            background-color: var(--bg-surface-alt);
+        }
 
-        /* SECTION: SPARKLINE */
-        .sparkline-wrap { width: 100%; height: 100px; background: var(--clr-bg-base); border: 1px solid var(--clr-border-faint); }
+        /* SECTION: NATIVE ACCORDION (accordion guide) */
+        details.tech-details {
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-surface);
+            border-radius: 2px;
+        }
+
+        summary.tech-summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-medium);
+            background-color: #181818;
+            border-bottom: 1px solid transparent;
+        }
+
+        details.tech-details[open] summary.tech-summary {
+            border-bottom-color: var(--border-subtle);
+            color: var(--text-high);
+        }
+
+        summary.tech-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .chevron-mark {
+            transition: transform 0.2s ease;
+            font-size: 10px;
+        }
+        details[open] .chevron-mark {
+            transform: rotate(90deg);
+        }
+
+        /* Smooth accordion height using ::details-content */
+        details.tech-details::details-content {
+            interpolate-size: allow-keywords;
+            contain: layout;
+            overflow: clip;
+        }
+
+        details.tech-details:not([open])::details-content {
+            block-size: 0;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            details.tech-details::details-content {
+                transition: block-size 0.2s cubic-bezier(0, 0, 0.2, 1), content-visibility 0.2s cubic-bezier(0, 0, 0.2, 1);
+                transition-behavior: allow-discrete;
+            }
+        }
+
+        /* SECTION: FLOATING TOAST POPUP (persistent-toast-notifications guide) */
+        @keyframes toast-slide-in {
+            from {
+                transform: translateX(115%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .toast-enter {
+                animation: toast-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+        }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-400 antialiased">
+<body class="bg-[#121212] text-[#e0e0e0] antialiased">
     <div id="root"></div>
 
     {% raw %}
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useCallback } = React;
+        const { useState, useEffect, useMemo } = React;
 
-        // SECTION: MOCK_INITIAL_STATE
-        const INIT = {
-            rtt: 11.4, jitter: 0.92, pktLoss: 0.02,
-            peakUtil: 68.5, flowRules: 18, rerouteTime: 1.82,
-            ctrlLatency: 1.8, mlLatency: 0.025, mlF1: 99.2,
-            mlAUC: 0.989, mlModel: 'RF_BALANCED',
-            activePath: 'P1', status: 'NORMAL', scenario: 'K1',
-            congRisk: 8.4, deltaU: 2.1
+        const PATH_DATA = {
+            P1: {
+                id: 'P1',
+                name: 'Path 1: Primary Lowest-Latency',
+                route: 's1-eth2 ➔ s2-eth3 ➔ s6',
+                switches: 's1 ➔ s2 ➔ s6',
+                bw: '10 Mbps',
+                delay: '10.0 ms',
+                hops: 2,
+                crossTraffic: 'h3 ➔ h4 on link s2-s6'
+            },
+            P2: {
+                id: 'P2',
+                name: 'Path 2: Secondary High-Bandwidth',
+                route: 's1-eth3 ➔ s3-eth2 ➔ s4-eth2 ➔ s6',
+                switches: 's1 ➔ s3 ➔ s4 ➔ s6',
+                bw: '10 Mbps',
+                delay: '30.0 ms',
+                hops: 3,
+                crossTraffic: 'Isolated backup path'
+            },
+            P3: {
+                id: 'P3',
+                name: 'Path 3: Tertiary Medium-Bandwidth',
+                route: 's1-eth4 ➔ s5-eth2 ➔ s6',
+                switches: 's1 ➔ s5 ➔ s6',
+                bw: '5 Mbps',
+                delay: '20.0 ms',
+                hops: 2,
+                crossTraffic: 'Low-capacity fallback'
+            }
         };
 
-        const PATHS = {
-            P1: { label: 'P1 [s1→s2→s6]', bw: '10M', delay: '10ms', hops: 2, links: ['LINK_s1_s2', 'LINK_s2_s6'] },
-            P2: { label: 'P2 [s1→s3→s4→s6]', bw: '10M', delay: '30ms', hops: 3, links: ['LINK_s1_s3', 'LINK_s3_s4', 'LINK_s4_s6'] },
-            P3: { label: 'P3 [s1→s5→s6]', bw: '5M', delay: '20ms', hops: 2, links: ['LINK_s1_s5', 'LINK_s5_s6'] }
-        };
-
-        const SCENARIOS_LIST = [
-            { id: 'K1', label: 'K1_NORMAL' },
-            { id: 'K2', label: 'K2_RAMP_LOAD' },
-            { id: 'K3', label: 'K3_BURST_SPIKE' },
-            { id: 'K4', label: 'K4_BOTTLENECK' },
-            { id: 'K5', label: 'K5_NETEM_DEGRADE' },
-            { id: 'K6', label: 'K6_LINK_FAILURE' },
+        const SCENARIOS = [
+            { id: 'K1', label: 'K1: Baseline Load', rate: '2.5 + 1M', desc: 'Luồng chính h1->h2 (2.5M) + tải nền nhẹ h3->h4 (1M). Tuyến P1 tối ưu.' },
+            { id: 'K2', label: 'K2: Gradual Load', rate: '2M ➔ 11M', desc: 'Tải nền tăng dần qua s2-s6. Kiểm tra dự báo sớm AI (H=5s).' },
+            { id: 'K3', label: 'K3: Burst Spike', rate: '12.0 Mbps', desc: 'Bùng nổ tải đột biến UDP trên s2-s6. Phát hiện và điều phối thích ứng.' },
+            { id: 'K4', label: 'K4: Bottleneck P1', rate: '9.5 Mbps', desc: 'Tải nền h3->h4 làm nghẽn s2-s6. Kích hoạt AI chuyển tuyến P1 ➔ P2.' },
+            { id: 'K5', label: 'K5: QoS Degradation', rate: '55ms / 4.5%', desc: 'Bơm trễ netem +55ms và rớt gói 4.5% trên s2-s6. Chuyển tuyến bảo vệ QoS.' },
+            { id: 'K6', label: 'K6: Link Failure', rate: 'DOWN', desc: 'Ngắt cổng s2-eth3 (DOWN). Kiểm tra khôi phục sự cố nhanh (Fast Failover).' }
         ];
 
-        const FLOW_TABLE_INIT = [
-            { id: 'FL_01', dpid: 's1', prio: 15, match: '10.0.0.1→10.0.0.2:5001', action: 'OUT:port_2', pkts: 14280, bytes: '18.4M', dur: '48s' },
-            { id: 'FL_02', dpid: 's2', prio: 15, match: '10.0.0.1→10.0.0.2:5001', action: 'OUT:port_2', pkts: 14278, bytes: '18.4M', dur: '48s' },
-            { id: 'FL_03', dpid: 's6', prio: 15, match: '10.0.0.1→10.0.0.2:5001', action: 'OUT:port_1', pkts: 14278, bytes: '18.4M', dur: '48s' },
-            { id: 'FL_04', dpid: 's2', prio: 20, match: '10.0.0.3→10.0.0.4',      action: 'OUT:port_2', pkts: 64120, bytes: '82.0M', dur: '120s' },
-            { id: 'FL_05', dpid: 's6', prio: 20, match: '10.0.0.3→10.0.0.4',      action: 'OUT:port_4', pkts: 64120, bytes: '82.0M', dur: '120s' },
-            { id: 'FL_06', dpid: 's1', prio: 10, match: '10.0.0.1→10.0.0.2 [BK]', action: 'OUT:port_3', pkts: 120,   bytes: '154K',  dur: '48s' },
-            { id: 'FL_07', dpid: 's3', prio: 10, match: '10.0.0.1→10.0.0.2 [BK]', action: 'OUT:port_2', pkts: 120,   bytes: '154K',  dur: '48s' },
-            { id: 'FL_08', dpid: 's4', prio: 10, match: '10.0.0.1→10.0.0.2 [BK]', action: 'OUT:port_2', pkts: 120,   bytes: '154K',  dur: '48s' },
-            { id: 'FL_09', dpid: 's1', prio: 0,  match: '* (TABLE_MISS)',           action: 'CONTROLLER', pkts: 48,    bytes: '3.2K',  dur: '360s' },
-        ];
-
-        const REROUTE_INIT = [
-            { id: 1, ts: '14:02:12', type: 'REROUTE',   flow: 'h1→h2', detail: 'P1→P2 | LINK_s2_s6 RISK:94.2% | COST:2.41→1.78 (-26.1%)' },
-            { id: 2, ts: '13:58:04', type: 'ANTI_FLAP', flow: 'h1→h2', detail: 'SUPPRESS_OSCILLATION | HOLD_REM:4.2s | ΔCOST:15%' },
-            { id: 3, ts: '13:52:20', type: 'ML_ALERT',  flow: 'LINK_s2_s6', detail: 'EARLY_CONGESTION | H:5s | Δu:+4.8%/s | u_mean:78.2%' },
-            { id: 4, ts: '13:48:00', type: 'FLOW_MOD',  flow: 'h1→h2', detail: 'INSTALL_BASELINE | PATH:P1 | PRIO:15 | MBB:ACTIVE' }
-        ];
-
-        // SECTION: HELPER_COMPONENTS
-        const KPICard = ({ label, value, unit, colorVar }) => (
-            <div style={{ padding: '10px 12px', borderRight: '1px solid var(--clr-border)' }}>
-                <div style={{ fontSize: 10, color: 'var(--clr-text-3)', letterSpacing: '0.08em', fontFamily: 'monospace' }}>{label}</div>
-                <div style={{ marginTop: 2, display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: colorVar || 'var(--clr-text-1)', fontFamily: '"JetBrains Mono", monospace' }}>{value}</span>
-                    {unit && <span style={{ fontSize: 10, color: 'var(--clr-text-3)' }}>{unit}</span>}
-                </div>
-            </div>
-        );
-
-        const Tag = ({ label, type = 'neutral' }) => {
-            const colors = {
-                ok:      { bg: 'var(--clr-ok-dim)',   border: 'var(--clr-ok)',   text: 'var(--clr-ok)' },
-                warn:    { bg: 'var(--clr-warn-dim)', border: 'var(--clr-warn)', text: 'var(--clr-warn)' },
-                err:     { bg: 'var(--clr-err-dim)',  border: 'var(--clr-err)',  text: 'var(--clr-err)' },
-                neutral: { bg: 'var(--clr-bg-base)',  border: 'var(--clr-border)', text: 'var(--clr-text-3)' },
-            };
-            const c = colors[type] || colors.neutral;
-            return (
-                <span style={{
-                    fontSize: 9, fontWeight: 700, padding: '1px 5px',
-                    background: c.bg, border: `1px solid ${c.border}`,
-                    color: c.text, fontFamily: 'monospace', letterSpacing: '0.05em'
-                }}>{label}</span>
-            );
+        // Initial 30-sample telemetry buffer for instant Grafana line rendering
+        const generateInitialMetrics = () => {
+            const arr = [];
+            const now = Date.now();
+            for (let i = 29; i >= 0; i--) {
+                const t = new Date(now - i * 1000).toTimeString().split(' ')[0];
+                arr.push({
+                    ts: t,
+                    throughput_mbps: parseFloat((2.45 + Math.sin(i / 3) * 0.25).toFixed(2)),
+                    latency_ms: parseFloat((10.2 + Math.cos(i / 2) * 0.6).toFixed(1)),
+                    loss_pct: 0.0,
+                    utilization_pct: parseFloat((24.5 + Math.sin(i / 3) * 2.5).toFixed(1))
+                });
+            }
+            return arr;
         };
 
-        const UtilBar = ({ pct, h = 4 }) => {
-            const color = pct >= 80 ? 'var(--clr-err)' : pct >= 65 ? 'var(--clr-warn)' : 'var(--clr-ok)';
-            return (
-                <div style={{ width: '100%', height: h, background: 'var(--clr-border-faint)' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: color, transition: 'width 0.5s ease' }} />
-                </div>
-            );
-        };
-
-        // SECTION: MAIN_DASHBOARD
-        function SDNDashboard() {
-            const [m, setM] = useState(INIT);
-            const [flows, setFlows] = useState(FLOW_TABLE_INIT);
-            const [rerouteLog, setRerouteLog] = useState(REROUTE_INIT);
-            const [selectedSwitch, setSelectedSwitch] = useState('ALL');
-            const [activeScenario, setActiveScenario] = useState('K1');
-            const [isLive, setIsLive] = useState(true);
-            const [epoch, setEpoch] = useState((Date.now() / 1000).toFixed(1));
-            const [consoleLogs, setConsoleLogs] = useState([
-                '14:00:01 OFP_EVENT DPID:0001 (s1) PORT_STATUS:UP',
-                '14:00:02 OFP_EVENT DPID:0002 (s2) PORT_STATUS:UP',
-                '14:00:03 TELEMETRY POLL_CYCLE Δt=1.0s',
-                '14:00:04 ML_SERVICE MODEL:RF_BALANCED TREES:100 ONLINE',
-                '14:00:05 CONTROLLER ACTIVE_PATH:P1 FLOW_TABLE:COMMITTED',
-            ]);
-            const [histData, setHistData] = useState(() => {
-                const a = [];
-                for (let i = 29; i >= 0; i--) {
-                    a.push({ tp: (7.2 + Math.sin(i/4)*1.4).toFixed(2), rtt: (11 + Math.cos(i/3)*2).toFixed(1) });
-                }
-                return a;
+        function SDNMonitorApp() {
+            const [liveData, setLiveData] = useState({
+                active_path: 'P1',
+                system_status: 'NORMAL',
+                current_scenario: 'K1',
+                scenario_desc: '',
+                ml_risk: 8.4,
+                ml_pred: 0,
+                active_summary: {
+                    throughput_mbps: 2.50,
+                    latency_ms: 10.2,
+                    jitter_ms: 0.8,
+                    loss_pct: 0.0,
+                    max_util: 25.0
+                },
+                paths_status: {
+                    P1: { is_active: true, max_util: 25.0, throughput_mbps: 2.50, latency_ms: 10.2, loss_pct: 0.0 },
+                    P2: { is_active: false, max_util: 0.0, throughput_mbps: 0.0, latency_ms: 30.0, loss_pct: 0.0 },
+                    P3: { is_active: false, max_util: 0.0, throughput_mbps: 0.0, latency_ms: 20.0, loss_pct: 0.0 }
+                },
+                links: [],
+                recent_metrics: generateInitialMetrics(),
+                reroute_logs: []
             });
 
-            // SECTION: EPOCH_CLOCK
-            useEffect(() => {
-                const t = setInterval(() => setEpoch((Date.now()/1000).toFixed(1)), 500);
-                return () => clearInterval(t);
-            }, []);
+            const [activeScenario, setActiveScenario] = useState('K1');
+            const [actionPending, setActionPending] = useState(false);
+            const [systemMsg, setSystemMsg] = useState(null);
+            const [timestamp, setTimestamp] = useState('');
 
-            // SECTION: TELEMETRY_POLL
+            // 'AUTO': Tự động hiển thị theo active_path | 'P1', 'P2', 'P3': Cố định xem tuyến được click
+            const [selectedViewPath, setSelectedViewPath] = useState('AUTO');
+
+            // Polling dữ liệu thực thời gian thực từ Flask Backend (/api/live_data)
             useEffect(() => {
-                if (!isLive) return;
-                const t = setInterval(() => {
-                    fetch('/api/live_data')
-                        .then(r => r.json())
-                        .then(data => {
+                const fetchMetrics = async () => {
+                    try {
+                        const res = await fetch('/api/live_data');
+                        if (res.ok) {
+                            const data = await res.json();
                             if (data && data.active_path) {
-                                setM(prev => ({
+                                setLiveData(prev => ({
                                     ...prev,
-                                    activePath: data.active_path,
-                                    scenario: data.current_scenario || prev.scenario,
-                                    status: data.system_status === 'CONGESTED_ALERT' ? 'CONGESTED' : 'NORMAL'
+                                    ...data,
+                                    // Giữ buffer đồ thị mượt nếu DB vừa reset chưa kịp có đủ điểm
+                                    recent_metrics: (data.recent_metrics && data.recent_metrics.length > 0)
+                                        ? data.recent_metrics
+                                        : prev.recent_metrics
                                 }));
+                                if (data.current_scenario) {
+                                    setActiveScenario(data.current_scenario);
+                                }
+                                setTimestamp(new Date().toTimeString().split(' ')[0]);
                             }
-                        })
-                        .catch(() => {
-                            // Fallback: simulate drift when API unavailable
-                            setM(prev => {
-                                const cong = prev.scenario === 'K4' || prev.scenario === 'K3';
-                                const util = cong && prev.activePath === 'P1'
-                                    ? 85 + Math.random()*8
-                                    : 60 + Math.random()*10;
-                                return {
-                                    ...prev,
-                                    rtt: parseFloat((prev.activePath === 'P1' ? (cong ? 62 : 11.5) : 31).toFixed(1)),
-                                    peakUtil: parseFloat(util.toFixed(1)),
-                                    jitter: parseFloat((0.6 + Math.random()*0.6).toFixed(2)),
-                                    pktLoss: cong && prev.activePath === 'P1' ? parseFloat((3+Math.random()).toFixed(2)) : 0.02,
-                                    congRisk: cong ? 90 + Math.random()*8 : 5 + Math.random()*8,
-                                    deltaU: cong ? +(3+Math.random()*3).toFixed(1) : +(0.5+Math.random()).toFixed(1),
-                                };
-                            });
-                        });
-                    setHistData(prev => {
-                        const next = [...prev.slice(1)];
-                        next.push({
-                            tp: (m.activePath === 'P1' && (m.scenario === 'K4' || m.scenario === 'K3') ? 3.5 : 7.8 + Math.random()*0.5).toFixed(2),
-                            rtt: m.rtt.toFixed(1)
-                        });
-                        return next;
-                    });
-                }, 1000);
-                return () => clearInterval(t);
-            }, [isLive, m.activePath, m.scenario, m.rtt]);
+                        }
+                    } catch (e) {
+                        // Không ghi đè dữ liệu ngẫu nhiên khi đang kết nối Backend
+                    }
+                };
 
-            // SECTION: SCENARIO_HANDLER
-            const handleScenario = useCallback((scId) => {
-                setActiveScenario(scId);
-                fetch('/api/scenario/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ scenario_id: scId })
-                }).catch(() => {});
-                const ts = new Date().toTimeString().slice(0,8);
-                setConsoleLogs(prev => [`${ts} SCENARIO_OVERRIDE ID:${scId}`, ...prev.slice(0,14)]);
-                if (scId === 'K4' || scId === 'K3') {
-                    setTimeout(() => {
-                        setM(prev => ({ ...prev, activePath: 'P2', status: 'REROUTED', congRisk: 94.2 }));
-                        setRerouteLog(prev => [{
-                            id: Date.now(), ts,
-                            type: 'REROUTE', flow: 'h1→h2',
-                            detail: `P1→P2 | LINK_s2_s6 CONGESTED | RTT:12ms→30ms | LOSS:0.0%`
-                        }, ...prev.slice(0,9)]);
-                        setConsoleLogs(prev => [`${ts} ML_REROUTE PATH:P1→P2 T_REROUTE:1.8s`, ...prev.slice(0,14)]);
-                    }, 1800);
-                } else if (scId === 'K1') {
-                    setM(prev => ({ ...prev, activePath: 'P1', status: 'NORMAL', congRisk: 8.4 }));
-                }
+                fetchMetrics();
+                const timer = setInterval(fetchMetrics, 1000);
+                return () => clearInterval(timer);
             }, []);
 
-            const filteredFlows = useMemo(() =>
-                selectedSwitch === 'ALL' ? flows : flows.filter(f => f.dpid === selectedSwitch),
-            [selectedSwitch, flows]);
+            // Gửi lệnh kích hoạt kịch bản xuống Backend (Không dùng setTimeout giả lập ở Frontend)
+            const runScenario = async (scId) => {
+                setActionPending(true);
+                setActiveScenario(scId);
 
-            // SECTION: STATUS_COLORS
-            const statusColor = m.status === 'NORMAL' ? 'var(--clr-ok)'
-                : m.status === 'REROUTED' ? 'var(--clr-warn)'
-                : 'var(--clr-err)';
-            const pktLossColor = m.pktLoss > 1 ? 'var(--clr-err)' : 'var(--clr-text-1)';
-            const utilColor = m.peakUtil >= 80 ? 'var(--clr-err)' : m.peakUtil >= 65 ? 'var(--clr-warn)' : 'var(--clr-text-1)';
-            const riskColor = m.congRisk >= 70 ? 'var(--clr-err)' : m.congRisk >= 40 ? 'var(--clr-warn)' : 'var(--clr-ok)';
-
-            const pathInfo = PATHS[m.activePath];
-            const utilByPath = {
-                P1: m.activePath === 'P1' ? m.peakUtil : 1.2,
-                P2: m.activePath === 'P2' ? 84.2 : 0,
-                P3: m.activePath === 'P3' ? 76.0 : 0,
+                try {
+                    const res = await fetch('/api/scenario/set', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scenario_id: scId })
+                    });
+                    const result = await res.json();
+                    if (res.ok) {
+                        setSystemMsg({
+                            type: scId === 'K1' ? 'ok' : (scId === 'K4' || scId === 'K5' || scId === 'K6') ? 'err' : 'info',
+                            text: `[${scId}] Đã kích hoạt: ${result.description || scId}. Đang thu thập telemetry thời gian thực...`
+                        });
+                    }
+                } catch (err) {
+                    setSystemMsg({ type: 'err', text: `Lỗi kết nối tới Backend khi kích hoạt ${scId}` });
+                } finally {
+                    setTimeout(() => setActionPending(false), 400);
+                }
             };
 
-            // SECTION: SPARKLINE_RENDER
-            const sparkPoints = (key, maxVal, h = 90) =>
-                histData.map((d, i) =>
-                    `${(i / (histData.length - 1)) * 500},${h - (parseFloat(d[key]) / maxVal) * h}`
-                ).join(' ');
+            // Reset system status & metrics
+            const resetSystem = async () => {
+                if (!confirm('Confirm reset: Clear metrics and revert to Path P1?')) return;
+                try {
+                    await fetch('/api/reset', { method: 'POST' });
+                } catch (e) {}
+                setLiveData(prev => ({
+                    ...prev,
+                    active_path: 'P1',
+                    system_status: 'NORMAL',
+                    current_scenario: 'K1',
+                    ml_risk: 8.4,
+                    active_summary: { throughput_mbps: 2.50, latency_ms: 10.2, loss_pct: 0.0, max_util: 25.0 },
+                    paths_status: {
+                        P1: { is_active: true, max_util: 25.0, throughput_mbps: 2.50, latency_ms: 10.2, loss_pct: 0.0 },
+                        P2: { is_active: false, max_util: 0.0, throughput_mbps: 0.0, latency_ms: 30.0, loss_pct: 0.0 },
+                        P3: { is_active: false, max_util: 0.0, throughput_mbps: 0.0, latency_ms: 20.0, loss_pct: 0.0 }
+                    },
+                    reroute_logs: []
+                }));
+                setActiveScenario('K1');
+                setSystemMsg({ type: 'ok', text: 'System reset committed. Active path restored to P1.' });
+            };
+
+            // Xác định tuyến đang được người dùng soi (Inspect) trên KPI và Biểu đồ
+            const viewedPathId = selectedViewPath === 'AUTO' ? (liveData.active_path || 'P1') : selectedViewPath;
+            const viewedSummary = (liveData.paths_status && liveData.paths_status[viewedPathId])
+                ? liveData.paths_status[viewedPathId]
+                : (liveData.active_summary || { throughput_mbps: 2.5, latency_ms: 10.0, loss_pct: 0.0, max_util: 25.0 });
+
+            // Chuỗi dữ liệu 30s của đúng tuyến đang được chọn xem
+            const viewedMetricsSeries = useMemo(() => {
+                if (selectedViewPath !== 'AUTO' && liveData.paths_history && liveData.paths_history[selectedViewPath]?.length > 0) {
+                    return liveData.paths_history[selectedViewPath];
+                }
+                if (liveData.paths_history && liveData.paths_history[viewedPathId]?.length > 0) {
+                    return liveData.paths_history[viewedPathId];
+                }
+                return liveData.recent_metrics || [];
+            }, [selectedViewPath, viewedPathId, liveData.paths_history, liveData.recent_metrics]);
+
+            // Telemetry values
+            const risk = Number(liveData.ml_risk || 0);
+            const isCongested = risk >= 65.0 || liveData.system_status === 'CONGESTED_ALERT';
+            const isWarning = risk >= 40.0 && risk < 65.0;
+
+            // Grafana-style SVG sparkline paths theo tuyến đang chọn (viewedMetricsSeries)
+            const { tpLine, rttLine } = useMemo(() => {
+                const arr = viewedMetricsSeries || [];
+                if (arr.length === 0) return { tpLine: '', rttLine: '' };
+                const w = 700;
+                const h = 110;
+                const step = w / Math.max(arr.length - 1, 1);
+                
+                const tpMax = 12.0;  // 12 Mbps full scale
+                const rttMax = 80.0; // 80 ms full scale
+
+                const tpPts = arr.map((pt, i) => {
+                    const y = h - (Math.min(pt.throughput_mbps, tpMax) / tpMax) * (h - 16) - 8;
+                    return `${(i * step).toFixed(1)},${y.toFixed(1)}`;
+                }).join(' ');
+
+                const rttPts = arr.map((pt, i) => {
+                    const y = h - (Math.min(pt.latency_ms, rttMax) / rttMax) * (h - 16) - 8;
+                    return `${(i * step).toFixed(1)},${y.toFixed(1)}`;
+                }).join(' ');
+
+                return { tpLine: tpPts, rttLine: rttPts };
+            }, [viewedMetricsSeries]);
 
             return (
-                <div style={{ minHeight: '100vh', background: 'var(--clr-bg-base)', padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-
-                    {/* SECTION: TOP_NAV */}
-                    <header style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: '6px 12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'monospace' }}>
-                            <span className="blink" style={{ width: 7, height: 7, background: statusColor, display: 'inline-block' }} />
-                            <span style={{ fontWeight: 700, color: 'var(--clr-text-1)', letterSpacing: '0.12em', fontSize: 13 }}>SDN_ML_QOS</span>
-                            <span style={{ color: 'var(--clr-text-4)' }}>//</span>
-                            <span style={{ fontSize: 11, color: 'var(--clr-text-3)' }}>RYU_4.34 · OF13 · PTIT_N22DCCN012_072</span>
+                <div className="w-full min-h-screen bg-[#121212] text-[#d4d4d4] flex flex-col p-3 gap-3">
+                    
+                    {/* 1. TOP UTILITY TOOLBAR (FULL-WIDTH, FLAT) */}
+                    <header className="w-full bg-[#181818] border border-[#2c2c2c] rounded-sm px-3 py-2 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold tracking-wider text-[#ffffff] uppercase">
+                                SDN QoS Monitoring & Adaptive Traffic Steering Console
+                            </span>
+                            <span className="text-[#444444]">|</span>
+                            <span className="text-[11px] text-[#888888] data-mono">
+                                RYU 4.34 · OF13 · 6-SWITCH MESH
+                            </span>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: 11 }}>
-                            <span style={{ padding: '2px 6px', background: 'var(--clr-bg-base)', border: '1px solid var(--clr-border)', color: 'var(--clr-text-3)' }}>
-                                CTRL_RTT: <span style={{ color: 'var(--clr-ok)' }}>{m.ctrlLatency}ms</span>
-                            </span>
-                            <span style={{ padding: '2px 6px', background: 'var(--clr-bg-base)', border: '1px solid var(--clr-border)', color: 'var(--clr-text-3)' }}>
-                                ML_INFER: <span style={{ color: 'var(--clr-warn)' }}>{m.mlLatency}ms</span>
-                            </span>
-                            <span style={{ padding: '2px 6px', background: 'var(--clr-bg-base)', border: '1px solid var(--clr-border)', color: 'var(--clr-text-3)' }}>
-                                EPOCH: <span style={{ color: 'var(--clr-text-2)' }}>{epoch}</span>
-                            </span>
-                            <button
-                                onClick={() => setIsLive(v => !v)}
-                                style={{
-                                    padding: '2px 8px', fontSize: 10, fontWeight: 700, fontFamily: 'monospace',
-                                    border: `1px solid ${isLive ? 'var(--clr-ok)' : 'var(--clr-border)'}`,
-                                    background: isLive ? 'var(--clr-ok-dim)' : 'var(--clr-bg-base)',
-                                    color: isLive ? 'var(--clr-ok)' : 'var(--clr-text-3)',
-                                    cursor: 'pointer', letterSpacing: '0.08em'
-                                }}
-                            >{isLive ? '⬤ LIVE' : '◼ HALT'}</button>
+                        <div className="flex items-center gap-2">
+                            {/* Controller & Network Status Badges */}
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-[#121212] border border-[#2c2c2c] rounded-sm text-[11px] data-mono">
+                                <span className="text-[#777777]">ACTIVE PATH:</span>
+                                <span className="text-[#3b82f6] font-bold">{liveData.active_path}</span>
+                            </div>
+
+                            <div className={`flex items-center gap-1.5 px-2 py-1 border rounded-sm text-[11px] data-mono font-semibold ${
+                                isCongested ? 'bg-[#2a1212] border-[#ef4444] text-[#ef4444]' :
+                                isWarning ? 'bg-[#2a2012] border-[#f59e0b] text-[#f59e0b]' :
+                                'bg-[#122218] border-[#10b981] text-[#10b981]'
+                            }`}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                <span>STATUS: {isCongested ? 'CONGESTION_ALERT' : isWarning ? 'ELEVATED_RISK' : 'NORMAL'}</span>
+                            </div>
+
+                            <div className="px-2 py-1 bg-[#121212] border border-[#2c2c2c] rounded-sm text-[11px] text-[#777777] data-mono">
+                                TIME: <span className="text-[#cccccc]">{timestamp || '--:--:--'}</span>
+                            </div>
+
+                            <button 
+                                onClick={resetSystem}
+                                className="px-2.5 py-1 bg-[#222222] hover:bg-[#2c2c2c] border border-[#383838] text-[11px] text-[#cccccc] data-mono rounded-sm transition cursor-pointer"
+                                title="Reset network state to Path P1 and clear metrics"
+                            >
+                                RESET
+                            </button>
                         </div>
                     </header>
 
-                    {/* SECTION: KPI_TICKER */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', borderBottom: 'none' }}>
-                        <KPICard label="RTT_AVG" value={m.rtt} unit="ms" />
-                        <KPICard label="JITTER" value={m.jitter} unit="ms" />
-                        <KPICard label="PKT_LOSS" value={m.pktLoss} unit="%" colorVar={pktLossColor} />
-                        <KPICard label="MAX_LINK_UTIL" value={m.peakUtil} unit="%" colorVar={utilColor} />
-                        <KPICard label="FLOW_RULES" value={m.flowRules} unit="entries" />
-                        <div style={{ padding: '10px 12px' }}>
-                            <div style={{ fontSize: 10, color: 'var(--clr-text-3)', letterSpacing: '0.08em', fontFamily: 'monospace' }}>ACTIVE_PATH // T_REROUTE</div>
-                            <div style={{ marginTop: 2, display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                                <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--clr-ok)', fontFamily: '"JetBrains Mono", monospace' }}>{m.activePath}</span>
-                                <span style={{ fontSize: 11, color: 'var(--clr-text-3)' }}>{m.rerouteTime}s</span>
-                                <Tag label={m.status} type={m.status === 'NORMAL' ? 'ok' : m.status === 'REROUTED' ? 'warn' : 'err'} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION: WORKSPACE_GRID */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 8 }}>
-
-                        {/* SECTION: LEFT_COL */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-
-                            {/* TOPOLOGY_PANEL */}
-                            <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', fontFamily: 'monospace', fontSize: 11 }}>
-                                    <span style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>TOPOLOGY_MATRIX // 6_OVS_NODES</span>
-                                    <span style={{ color: 'var(--clr-ok)', padding: '1px 6px', background: 'var(--clr-ok-dim)', border: '1px solid var(--clr-ok)' }}>ROUTE: {m.activePath}</span>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    {['P1', 'P2', 'P3'].map(pid => {
-                                        const info = PATHS[pid];
-                                        const isActive = m.activePath === pid;
-                                        const util = utilByPath[pid];
-                                        return (
-                                            <div key={pid} style={{
-                                                padding: 8, border: `1px solid ${isActive ? 'var(--clr-ok)' : 'var(--clr-border-faint)'}`,
-                                                background: 'var(--clr-bg-cell)'
-                                            }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontFamily: 'monospace', fontSize: 11 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                        {isActive && <span style={{ width: 6, height: 6, background: 'var(--clr-ok)', display: 'inline-block' }} />}
-                                                        <span style={{ fontWeight: 700, color: isActive ? 'var(--clr-text-1)' : 'var(--clr-text-3)' }}>{info.label}</span>
-                                                    </div>
-                                                    <span style={{ fontSize: 10, color: 'var(--clr-text-4)' }}>{info.bw} // {info.delay} // {info.hops}_HOPS</span>
-                                                </div>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    {info.links.map(lnk => {
-                                                        const lUtil = lnk === 'LINK_s2_s6' && pid === 'P1' && isActive ? m.peakUtil : (isActive ? util * 0.95 : 0);
-                                                        return (
-                                                            <div key={lnk}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 2, fontFamily: 'monospace' }}>
-                                                                    <span style={{ color: 'var(--clr-text-3)' }}>{lnk}</span>
-                                                                    <span style={{ color: lUtil >= 80 ? 'var(--clr-err)' : lUtil >= 65 ? 'var(--clr-warn)' : 'var(--clr-text-3)' }}>
-                                                                        {isActive ? `${lUtil.toFixed(1)}%` : 'IDLE'}
-                                                                    </span>
-                                                                </div>
-                                                                <UtilBar pct={lUtil} h={3} />
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* TELEMETRY_CHART */}
-                            <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', fontFamily: 'monospace', fontSize: 11 }}>
-                                    <span style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>TELEMETRY_STREAM // TP vs RTT</span>
-                                    <div style={{ display: 'flex', gap: 10, fontSize: 10 }}>
-                                        <span style={{ color: 'var(--clr-ok)' }}>■ TP (Mbps)</span>
-                                        <span style={{ color: 'var(--clr-warn)' }}>■ RTT (ms)</span>
-                                        <span style={{ color: 'var(--clr-err)' }}>— THRESH 8.0M</span>
-                                    </div>
-                                </div>
-                                <div className="sparkline-wrap" style={{ position: 'relative' }}>
-                                    <svg width="100%" height="100%" viewBox="0 0 500 90" preserveAspectRatio="none">
-                                        {/* Grid lines */}
-                                        {[20, 45, 70].map(y => (
-                                            <line key={y} x1="0" y1={y} x2="500" y2={y} stroke="#1c1c1f" strokeWidth="0.8" strokeDasharray="2,3" />
-                                        ))}
-                                        {/* Threshold line 8M */}
-                                        <line x1="0" y1="18" x2="500" y2="18" stroke="var(--clr-err)" strokeWidth="0.8" strokeDasharray="4,3" opacity="0.6" />
-                                        {/* RTT line */}
-                                        <polyline fill="none" stroke="var(--clr-warn)" strokeWidth="1.2"
-                                            points={sparkPoints('rtt', 80)} />
-                                        {/* TP line */}
-                                        <polyline fill="none" stroke="var(--clr-ok)" strokeWidth="1.5"
-                                            points={sparkPoints('tp', 10)} />
-                                    </svg>
-                                    <span style={{ position: 'absolute', top: 3, left: 6, fontSize: 9, color: 'var(--clr-text-4)', fontFamily: 'monospace' }}>10M // 80ms</span>
-                                    <span style={{ position: 'absolute', bottom: 3, right: 6, fontSize: 9, color: 'var(--clr-text-4)', fontFamily: 'monospace' }}>W:30s Δt:1s</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* SECTION: RIGHT_COL */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-
-                            {/* ML_ENGINE_PANEL */}
-                            <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10, fontFamily: 'monospace' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', fontSize: 11 }}>
-                                    <span style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>ML_ENGINE // EARLY_PREDICTION</span>
-                                    <div style={{ display: 'flex', gap: 6 }}>
-                                        <Tag label={`F1:${m.mlF1}%`} type="ok" />
-                                        <Tag label={`AUC:${m.mlAUC}`} type="ok" />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                    {/* Congestion Risk Bar */}
-                                    <div style={{ padding: 7, background: 'var(--clr-bg-cell)', border: '1px solid var(--clr-border-faint)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 5 }}>
-                                            <span style={{ color: 'var(--clr-text-3)' }}>CONGESTION_RISK_H5s</span>
-                                            <span style={{ color: riskColor, fontWeight: 700 }}>{m.congRisk.toFixed(1)}%</span>
-                                        </div>
-                                        <UtilBar pct={m.congRisk} h={5} />
-                                    </div>
-
-                                    {/* ML Metrics Grid */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 10 }}>
-                                        {[
-                                            { label: 'MODEL_TYPE', value: m.mlModel, color: 'var(--clr-ok)' },
-                                            { label: 'INFER_LATENCY', value: `${m.mlLatency} ms` },
-                                            { label: 'FEAT_Δu', value: `+${m.deltaU}%/s`, color: 'var(--clr-warn)' },
-                                            { label: 'u_mean', value: `${m.peakUtil}%` },
-                                            { label: 'd_mean', value: `${m.rtt}ms` },
-                                            { label: 'HORIZON_H', value: '5.0s' },
-                                        ].map(({ label, value, color }) => (
-                                            <div key={label} style={{ padding: '5px 7px', background: 'var(--clr-bg-cell)', border: '1px solid var(--clr-border-faint)' }}>
-                                                <div style={{ color: 'var(--clr-text-3)', fontSize: 9 }}>{label}</div>
-                                                <div style={{ color: color || 'var(--clr-text-1)', fontWeight: 600, marginTop: 2 }}>{value}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* REROUTE_EVENT_LOG */}
-                            <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10, fontFamily: 'monospace' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', fontSize: 11 }}>
-                                    <span style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>ROUTING_EVENTS // MBB_LOG</span>
-                                    <Tag label="ANTI_FLAP:δ15%" type="neutral" />
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 200, overflowY: 'auto' }}>
-                                    {rerouteLog.map(log => {
-                                        const tagType = log.type === 'REROUTE' ? 'ok' : log.type === 'ANTI_FLAP' ? 'warn' : log.type === 'ML_ALERT' ? 'err' : 'neutral';
-                                        return (
-                                            <div key={log.id} style={{ padding: '5px 7px', background: 'var(--clr-bg-cell)', border: '1px solid var(--clr-border-faint)', fontSize: 10 }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                                                    <Tag label={log.type} type={tagType} />
-                                                    <span style={{ color: 'var(--clr-text-4)', fontSize: 9 }}>{log.ts}</span>
-                                                </div>
-                                                <div style={{ color: 'var(--clr-text-2)', lineHeight: 1.4 }}>{log.detail}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION: BOTTOM_ROW */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '8fr 4fr', gap: 8 }}>
-
-                        {/* FLOW_TABLE — responsive-table guide: tabindex, role, aria-label */}
-                        <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', fontFamily: 'monospace', fontSize: 11 }}>
-                                <span style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>FLOW_TABLE_OF13</span>
-                                <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 10 }}>
-                                    <span style={{ color: 'var(--clr-text-3)' }}>DPID:</span>
-                                    {['ALL', 's1', 's2', 's3', 's4', 's6'].map(sw => (
-                                        <button key={sw} onClick={() => setSelectedSwitch(sw)} style={{
-                                            padding: '1px 6px', fontSize: 10, fontFamily: 'monospace', cursor: 'pointer',
-                                            border: `1px solid ${selectedSwitch === sw ? 'var(--clr-ok)' : 'var(--clr-border)'}`,
-                                            background: selectedSwitch === sw ? 'var(--clr-ok-dim)' : 'var(--clr-bg-base)',
-                                            color: selectedSwitch === sw ? 'var(--clr-ok)' : 'var(--clr-text-3)',
-                                        }}>{sw}</button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* responsive-table guide: tabindex="0" + role="region" for keyboard scroll */}
-                            <div
-                                tabIndex="0"
-                                role="region"
-                                aria-label="OpenFlow 1.3 Flow Table"
-                                className="flow-table-wrapper"
+                    {/* FLOATING TOAST NOTIFICATION POPUP (persistent-toast-notifications guide) */}
+                    <div 
+                        role="region" 
+                        aria-label="System Notifications" 
+                        className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+                    >
+                        {systemMsg && (
+                            <div 
+                                role="status" 
+                                aria-live="polite" 
+                                className={`pointer-events-auto toast-enter p-3 border rounded-sm text-xs data-mono flex items-start justify-between gap-3 bg-[#181818] ${
+                                    systemMsg.type === 'err' ? 'border-[#ef4444] text-[#ef4444]' :
+                                    systemMsg.type === 'ok' ? 'border-[#10b981] text-[#10b981]' :
+                                    'border-[#3b82f6] text-[#93c5fd]'
+                                }`}
                             >
-                                <table className="flow-table">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#aaaaaa]">
+                                        <span className={`w-1.5 h-1.5 rounded-full ${
+                                            systemMsg.type === 'err' ? 'bg-[#ef4444]' :
+                                            systemMsg.type === 'ok' ? 'bg-[#10b981]' :
+                                            'bg-[#3b82f6]'
+                                        }`}></span>
+                                        <span>[SYSTEM DISPATCH]</span>
+                                    </div>
+                                    <div className="text-xs text-[#ffffff] font-medium leading-relaxed">
+                                        {systemMsg.text}
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSystemMsg(null)}
+                                    className="text-[#888888] hover:text-[#ffffff] text-sm p-1 rounded-sm focus-visible:outline cursor-pointer transition shrink-0"
+                                    aria-label="Dismiss notification"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 2. FLAT KPI TICKER (5 COMPACT METRICS) */}
+                    <section aria-label="Key QoS Metrics" className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                        
+                        {/* METRIC 1: LATENCY */}
+                        <div className="bg-[#181818] border border-[#282828] rounded-sm p-2.5">
+                            <div className="text-[10px] text-[#777777] font-semibold uppercase tracking-wider flex justify-between">
+                                <span>Round-Trip Time ({viewedPathId})</span>
+                                {selectedViewPath !== 'AUTO' && <span className="text-[#f59e0b] data-mono">INSPECTING</span>}
+                            </div>
+                            <div className="mt-1 flex items-baseline gap-1.5">
+                                <span className="data-mono text-2xl font-bold text-[#ffffff]">
+                                    {Number(viewedSummary?.latency_ms || 10.0).toFixed(1)}
+                                </span>
+                                <span className="data-mono text-xs text-[#888888]">ms</span>
+                            </div>
+                            <div className="mt-1 text-[10px] text-[#666666] data-mono">
+                                Nominal: {PATH_DATA[viewedPathId]?.delay}
+                            </div>
+                        </div>
+
+                        {/* METRIC 2: THROUGHPUT */}
+                        <div className="bg-[#181818] border border-[#282828] rounded-sm p-2.5">
+                            <div className="text-[10px] text-[#777777] font-semibold uppercase tracking-wider">
+                                Path Throughput ({viewedPathId})
+                            </div>
+                            <div className="mt-1 flex items-baseline gap-1.5">
+                                <span className="data-mono text-2xl font-bold text-[#10b981]">
+                                    {Number(viewedSummary?.throughput_mbps || 0.0).toFixed(2)}
+                                </span>
+                                <span className="data-mono text-xs text-[#888888]">Mbps</span>
+                            </div>
+                            <div className="mt-1 text-[10px] text-[#666666] data-mono">
+                                Capacity: {PATH_DATA[viewedPathId]?.bw}
+                            </div>
+                        </div>
+
+                        {/* METRIC 3: LINK UTILIZATION */}
+                        <div className="bg-[#181818] border border-[#282828] rounded-sm p-2.5">
+                            <div className="text-[10px] text-[#777777] font-semibold uppercase tracking-wider">
+                                Peak Link Util ({viewedPathId})
+                            </div>
+                            <div className="mt-1 flex items-baseline gap-1.5">
+                                <span className={`data-mono text-2xl font-bold ${
+                                    Number(viewedSummary?.max_util || 0) >= 80 ? 'text-[#ef4444]' :
+                                    Number(viewedSummary?.max_util || 0) >= 60 ? 'text-[#f59e0b]' :
+                                    'text-[#ffffff]'
+                                }`}>
+                                    {Number(viewedSummary?.max_util || 0.0).toFixed(1)}
+                                </span>
+                                <span className="data-mono text-xs text-[#888888]">%</span>
+                            </div>
+                            <div className="mt-1 text-[10px] text-[#666666] data-mono">
+                                Threshold: 80.0%
+                            </div>
+                        </div>
+
+                        {/* METRIC 4: PACKET LOSS */}
+                        <div className="bg-[#181818] border border-[#282828] rounded-sm p-2.5">
+                            <div className="text-[10px] text-[#777777] font-semibold uppercase tracking-wider">
+                                Packet Loss Rate ({viewedPathId})
+                            </div>
+                            <div className="mt-1 flex items-baseline gap-1.5">
+                                <span className={`data-mono text-2xl font-bold ${
+                                    Number(viewedSummary?.loss_pct || 0) > 1.0 ? 'text-[#ef4444]' : 'text-[#ffffff]'
+                                }`}>
+                                    {Number(viewedSummary?.loss_pct || 0.0).toFixed(2)}
+                                </span>
+                                <span className="data-mono text-xs text-[#888888]">%</span>
+                            </div>
+                            <div className="mt-1 text-[10px] text-[#666666] data-mono">
+                                Max Tolerated: 2.0%
+                            </div>
+                        </div>
+
+                        {/* METRIC 5: ML CONGESTION PROBABILITY */}
+                        <div className={`rounded-sm p-2.5 border ${
+                            isCongested ? 'bg-[#221313] border-[#7f1d1d]' :
+                            isWarning ? 'bg-[#221c13] border-[#78350f]' :
+                            'bg-[#181818] border-[#282828]'
+                        }`}>
+                            <div className="text-[10px] text-[#777777] font-semibold uppercase tracking-wider flex justify-between">
+                                <span>ML Congestion Risk (H=5s)</span>
+                                <span className="data-mono font-bold text-[#aaaaaa]">RF</span>
+                            </div>
+                            <div className="mt-1 flex items-baseline gap-1.5">
+                                <span className={`data-mono text-2xl font-bold ${
+                                    isCongested ? 'text-[#ef4444]' :
+                                    isWarning ? 'text-[#f59e0b]' :
+                                    'text-[#10b981]'
+                                }`}>
+                                    {risk.toFixed(1)}
+                                </span>
+                                <span className="data-mono text-xs text-[#888888]">%</span>
+                            </div>
+                            {/* Flat Bar without gradient */}
+                            <div className="w-full bg-[#252525] h-1.5 rounded-none mt-2 overflow-hidden">
+                                <div 
+                                    className={`h-full ${isCongested ? 'bg-[#ef4444]' : isWarning ? 'bg-[#f59e0b]' : 'bg-[#10b981]'}`}
+                                    style={{ width: `${Math.min(Math.max(risk, 3), 100)}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                    </section>
+
+                    {/* 3. CORE WORKSPACE: 3-COLUMN FULL-WIDTH LAYOUT */}
+                    <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-3">
+                        
+                        {/* COLUMN 1: TOPOLOGY & 3 PATHS MATRIX (4 COLS) */}
+                        <section aria-labelledby="topology-title" className="lg:col-span-4 bg-[#181818] border border-[#2c2c2c] rounded-sm p-3 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between pb-2 border-b border-[#2c2c2c] mb-2.5">
+                                    <h2 id="topology-title" className="text-xs font-bold text-[#ffffff] uppercase tracking-wider">
+                                        Topology Paths (Click to Inspect)
+                                    </h2>
+                                    <button
+                                        onClick={() => setSelectedViewPath('AUTO')}
+                                        className={`px-2 py-0.5 text-[10px] data-mono rounded-sm border cursor-pointer transition ${
+                                            selectedViewPath === 'AUTO'
+                                                ? 'bg-[#3b82f6] text-[#ffffff] border-[#3b82f6] font-bold'
+                                                : 'bg-[#141414] text-[#888888] border-[#333333] hover:text-[#ffffff]'
+                                        }`}
+                                        title="Automatically follow whichever path is currently ACTIVE"
+                                    >
+                                        AUTO FOLLOW ({liveData.active_path})
+                                    </button>
+                                </div>
+
+                                <div className="space-y-2">
+                                    {['P1', 'P2', 'P3'].map(pid => {
+                                        const p = PATH_DATA[pid];
+                                        const isActive = liveData.active_path === pid;
+                                        const isSelected = viewedPathId === pid;
+                                        const stat = liveData.paths_status?.[pid] || {};
+                                        const util = Number(stat.max_util || 0);
+
+                                        return (
+                                            <div 
+                                                key={pid}
+                                                onClick={() => setSelectedViewPath(pid === selectedViewPath ? 'AUTO' : pid)}
+                                                tabIndex="0"
+                                                role="button"
+                                                aria-pressed={isSelected}
+                                                className={`p-2.5 border rounded-sm transition cursor-pointer ${
+                                                    isSelected 
+                                                        ? 'bg-[#1c222b] border-[#3b82f6]' 
+                                                        : isActive
+                                                        ? 'bg-[#162019] border-[#10b981]'
+                                                        : 'bg-[#141414] border-[#262626] hover:border-[#444444]'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="data-mono font-bold text-xs text-[#ffffff]">{p.id}</span>
+                                                        <span className="text-[11px] text-[#888888] font-medium">{p.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        {selectedViewPath === pid && (
+                                                            <span className="px-1.5 py-0.2 bg-[#3b82f6] text-[#ffffff] text-[9px] font-bold rounded-none data-mono">
+                                                                VIEWING
+                                                            </span>
+                                                        )}
+                                                        {isActive ? (
+                                                            <span className="px-1.5 py-0.2 bg-[#10b981] text-[#000000] text-[9px] font-bold rounded-none data-mono">
+                                                                ACTIVE
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-1 py-0.2 bg-[#252525] text-[#777777] text-[9px] data-mono">
+                                                                STANDBY
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-[11px] data-mono text-[#aaaaaa] mb-2">
+                                                    Hop Sequence: <span className="text-[#ffffff] font-semibold">{p.switches}</span>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-1 bg-[#121212] border border-[#222222] p-1.5 text-center data-mono text-[10px] mb-2">
+                                                    <div>
+                                                        <span className="text-[#666666] block">CAPACITY</span>
+                                                        <span className="text-[#cccccc] font-semibold">{p.bw}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[#666666] block">RTT NOW</span>
+                                                        <span className="text-[#cccccc] font-semibold">{Number(stat.latency_ms || parseFloat(p.delay)).toFixed(1)} ms</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[#666666] block">LOSS</span>
+                                                        <span className={Number(stat.loss_pct || 0) > 1 ? 'text-[#ef4444] font-bold' : 'text-[#cccccc] font-semibold'}>
+                                                            {Number(stat.loss_pct || 0).toFixed(1)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between text-[10px] data-mono">
+                                                        <span className="text-[#666666]">Load Factor:</span>
+                                                        <span className={`font-semibold ${util >= 80 ? 'text-[#ef4444]' : util >= 60 ? 'text-[#f59e0b]' : 'text-[#888888]'}`}>
+                                                            {util.toFixed(1)}% ({stat.throughput_mbps?.toFixed(2) || '0.00'} Mbps)
+                                                        </span>
+                                                    </div>
+                                                    <div className="w-full bg-[#202020] h-1 rounded-none overflow-hidden">
+                                                        <div 
+                                                            className={`h-full ${util >= 80 ? 'bg-[#ef4444]' : util >= 60 ? 'bg-[#f59e0b]' : 'bg-[#10b981]'}`}
+                                                            style={{ width: `${Math.min(util, 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="mt-2.5 pt-2 border-t border-[#262626] text-[10px] text-[#666666] data-mono">
+                                Routing Metric: Cost(P) = 0.3(d) + 0.2(j) + 0.3(l) + 0.2(u)
+                            </div>
+                        </section>
+
+                        {/* COLUMN 2: GRAFANA-STYLE TELEMETRY CHART (5 COLS) */}
+                        <section aria-labelledby="chart-title" className="lg:col-span-5 bg-[#181818] border border-[#2c2c2c] rounded-sm p-3 flex flex-col justify-between">
+                            <div>
+                                <div className="flex flex-wrap items-center justify-between pb-2 border-b border-[#2c2c2c] mb-2.5 gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <h2 id="chart-title" className="text-xs font-bold text-[#ffffff] uppercase tracking-wider">
+                                            Telemetry Stream: <span className="text-[#3b82f6]">{viewedPathId}</span> ({PATH_DATA[viewedPathId]?.switches})
+                                        </h2>
+                                        <div className="flex items-center gap-1 data-mono text-[10px]">
+                                            {['AUTO', 'P1', 'P2', 'P3'].map(mode => (
+                                                <button
+                                                    key={mode}
+                                                    onClick={() => setSelectedViewPath(mode)}
+                                                    className={`px-1.5 py-0.2 border cursor-pointer ${
+                                                        selectedViewPath === mode
+                                                            ? 'bg-[#3b82f6] text-[#ffffff] border-[#3b82f6] font-bold'
+                                                            : 'bg-[#141414] text-[#888888] border-[#2c2c2c] hover:text-[#ffffff]'
+                                                    }`}
+                                                >
+                                                    {mode}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] data-mono">
+                                        <span className="text-[#10b981] font-semibold">― Throughput (Mbps)</span>
+                                        <span className="text-[#f59e0b] font-semibold">― Latency (ms)</span>
+                                        <span className="text-[#ef4444] font-semibold">┄ Threshold (8M)</span>
+                                    </div>
+                                </div>
+
+                                {/* Pure SVG Grafana Line Chart (No Area Gradient) */}
+                                <div className="relative w-full h-48 bg-[#141414] border border-[#262626] p-2">
+                                    <svg width="100%" height="100%" viewBox="0 0 700 110" preserveAspectRatio="none" aria-hidden="true">
+                                        {/* Grid lines */}
+                                        <line x1="0" y1="28" x2="700" y2="28" stroke="#222222" strokeWidth="1" strokeDasharray="2,3" />
+                                        <line x1="0" y1="56" x2="700" y2="56" stroke="#222222" strokeWidth="1" strokeDasharray="2,3" />
+                                        <line x1="0" y1="84" x2="700" y2="84" stroke="#222222" strokeWidth="1" strokeDasharray="2,3" />
+
+                                        {/* 8.0 Mbps Congestion Threshold line */}
+                                        <line x1="0" y1="36" x2="700" y2="36" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,4" opacity="0.7" />
+
+                                        {/* Latency Curve (amber) */}
+                                        {rttLine && (
+                                            <polyline 
+                                                fill="none" 
+                                                stroke="#f59e0b" 
+                                                strokeWidth="1.5" 
+                                                strokeLinejoin="round"
+                                                points={rttLine} 
+                                            />
+                                        )}
+
+                                        {/* Throughput Curve (emerald) */}
+                                        {tpLine && (
+                                            <polyline 
+                                                fill="none" 
+                                                stroke="#10b981" 
+                                                strokeWidth="1.8" 
+                                                strokeLinejoin="round"
+                                                points={tpLine} 
+                                            />
+                                        )}
+                                    </svg>
+
+                                    {/* Axis Guides */}
+                                    <div className="absolute top-1 left-2 text-[9px] data-mono text-[#555555]">
+                                        12 Mbps / 60 ms
+                                    </div>
+                                    <div className="absolute top-[30px] right-2 text-[9px] data-mono text-[#ef4444]">
+                                        CONGESTION_LEVEL: 8.0 Mbps
+                                    </div>
+                                    <div className="absolute bottom-1 right-2 text-[9px] data-mono text-[#555555]">
+                                        Sampling Window: 30s · Δt = 1.0s
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-2.5 pt-2 border-t border-[#262626] flex items-center justify-between text-[10px] data-mono text-[#666666]">
+                                <span>Model: <span className="text-[#aaaaaa]">RandomForest (12 Temporal Features)</span></span>
+                                <span>Evaluation: <span className="text-[#10b981]">F1: 99.2%</span> · <span className="text-[#10b981]">AUC: 0.989</span></span>
+                            </div>
+                        </section>
+
+                        {/* COLUMN 3: TEST SCENARIO CONTROLS (3 COLS) */}
+                        <section aria-labelledby="scenarios-title" className="lg:col-span-3 bg-[#181818] border border-[#2c2c2c] rounded-sm p-3 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between pb-2 border-b border-[#2c2c2c] mb-2.5">
+                                    <h2 id="scenarios-title" className="text-xs font-bold text-[#ffffff] uppercase tracking-wider">
+                                        Traffic Scenarios
+                                    </h2>
+                                    {actionPending && (
+                                        <span className="text-[10px] text-[#f59e0b] data-mono">
+                                            DISPATCHING...
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    {SCENARIOS.map(sc => {
+                                        const isCurrent = activeScenario === sc.id;
+                                        return (
+                                            <button
+                                                key={sc.id}
+                                                onClick={() => runScenario(sc.id)}
+                                                disabled={actionPending}
+                                                aria-pressed={isCurrent}
+                                                className={`w-full text-left p-2 rounded-sm border transition cursor-pointer ${
+                                                    isCurrent 
+                                                        ? 'bg-[#222830] border-[#3b82f6] text-[#ffffff]' 
+                                                        : 'bg-[#141414] border-[#252525] hover:border-[#383838] text-[#cccccc]'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className="data-mono font-bold text-xs">{sc.label}</span>
+                                                    <span className={`text-[9px] data-mono font-semibold px-1 py-0.2 rounded-none ${
+                                                        sc.id === 'K4' ? 'bg-[#3b1212] text-[#f87171] border border-[#ef4444]' :
+                                                        sc.id === 'K1' ? 'bg-[#122b1c] text-[#34d399] border border-[#10b981]' :
+                                                        'bg-[#222222] text-[#888888]'
+                                                    }`}>
+                                                        {sc.rate}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[10px] text-[#666666] mt-0.5 leading-tight">
+                                                    {sc.desc}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="mt-2.5 pt-2 border-t border-[#262626] text-[10px] text-[#777777] data-mono">
+                                Instruction: Click <span className="text-[#ef4444] font-bold">K4</span> to trigger bottleneck on s2-s6 and observe adaptive reroute to P2.
+                            </div>
+                        </section>
+
+                    </div>
+
+                    {/* 4. REROUTE LOGS & ADAPTIVE DECISIONS (FULL-WIDTH) */}
+                    <section aria-labelledby="reroute-title" className="w-full bg-[#181818] border border-[#2c2c2c] rounded-sm p-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-[#2c2c2c] mb-2">
+                            <h2 id="reroute-title" className="text-xs font-bold text-[#ffffff] uppercase tracking-wider">
+                                Adaptive Routing Event Log (Anti-Flapping: δ = 15%, T_hold = 10s)
+                            </h2>
+                            <span className="text-[10px] text-[#777777] data-mono">
+                                Total Events: {liveData.reroute_logs?.length || 0}
+                            </span>
+                        </div>
+
+                        <div 
+                            className="space-y-1 max-h-36 overflow-y-auto pr-1 data-mono text-[11px]"
+                            tabIndex="0" 
+                            role="region" 
+                            aria-label="Reroute Event Stream"
+                        >
+                            {liveData.reroute_logs && liveData.reroute_logs.length > 0 ? (
+                                liveData.reroute_logs.map((log, idx) => (
+                                    <div key={idx} className="bg-[#141414] border border-[#242424] px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[#666666]">{log.ts?.slice(11, 19) || 'RECENT'}</span>
+                                            <span className="px-1 bg-[#1a2332] text-[#60a5fa] border border-[#2563eb] text-[10px] font-bold">
+                                                {log.flow_id || 'h1_to_h2'}
+                                            </span>
+                                            <span className="text-[#ffffff] font-semibold">
+                                                {log.old_path} ➔ {log.new_path}
+                                            </span>
+                                            <span className="text-[#444444]">|</span>
+                                            <span className="text-[#f59e0b]">{log.trigger_reason}</span>
+                                        </div>
+                                        {log.improvement_pct > 0 && (
+                                            <span className="text-[#10b981] text-[10px] bg-[#122618] border border-[#10b981] px-1.5 py-0.2">
+                                                ΔCost: +{Number(log.improvement_pct).toFixed(1)}%
+                                            </span>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-[#555555] text-xs">
+                                    No reroute events recorded. Network operating within nominal QoS thresholds on active path.
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* 5. OPENFLOW 1.3 FLOW TABLE - NATIVE ACCORDION & RESPONSIVE DATA TABLE */}
+                    <details className="tech-details w-full">
+                        <summary className="tech-summary">
+                            <span className="flex items-center gap-2">
+                                <span className="chevron-mark">▶</span>
+                                <span>OPENFLOW 1.3 SWITCH FLOW TABLES (s1 ➔ s6 TELEMETRY REGISTRY)</span>
+                            </span>
+                            <span className="text-[#666666] data-mono text-[10px]">
+                                CLICK TO EXPAND / COLLAPSE
+                            </span>
+                        </summary>
+
+                        <div className="p-2.5 bg-[#141414]">
+                            {/* responsive-table guide: tabindex="0" + role="region" */}
+                            <div 
+                                tabIndex="0" 
+                                role="region" 
+                                aria-labelledby="flow-caption" 
+                                className="table-scroller"
+                            >
+                                <table className="flow-data-table">
+                                    <caption id="flow-caption" className="sr-only">
+                                        Active OpenFlow 1.3 flow table entries across switch topology
+                                    </caption>
                                     <thead>
                                         <tr>
-                                            {['FLOW_ID','DPID','PRIO','MATCH','ACTION','PKTS','BYTES','DUR'].map(h => (
-                                                <th key={h} style={{ textAlign: h === 'PKTS' || h === 'BYTES' || h === 'DUR' ? 'right' : 'left' }}>{h}</th>
-                                            ))}
+                                            <th className="text-left">DPID</th>
+                                            <th className="text-left">Priority</th>
+                                            <th className="text-left">Match Fields</th>
+                                            <th className="text-left">Instruction / Action</th>
+                                            <th className="text-right">Packets</th>
+                                            <th className="text-right">Bytes</th>
+                                            <th className="text-right">Flow Purpose</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {filteredFlows.map(row => (
-                                            <tr key={row.id}>
-                                                <td style={{ fontWeight: 700, color: 'var(--clr-text-1)' }}>{row.id}</td>
-                                                <td style={{ color: 'var(--clr-ok)' }}>{row.dpid}</td>
-                                                <td style={{ color: 'var(--clr-text-2)' }}>{row.prio}</td>
-                                                <td style={{ color: 'var(--clr-text-2)' }}>{row.match}</td>
-                                                <td style={{ color: 'var(--clr-text-1)' }}>{row.action}</td>
-                                                <td style={{ textAlign: 'right', color: 'var(--clr-text-3)' }}>{row.pkts.toLocaleString()}</td>
-                                                <td style={{ textAlign: 'right', color: 'var(--clr-text-2)' }}>{row.bytes}</td>
-                                                <td style={{ textAlign: 'right', color: 'var(--clr-text-3)' }}>{row.dur}</td>
-                                            </tr>
-                                        ))}
+                                    <tbody className="divide-y divide-[#222222]">
+                                        <tr>
+                                            <td className="text-[#10b981] font-bold">s1 (Ingress)</td>
+                                            <td>15</td>
+                                            <td className="text-[#cccccc]">eth_type=0x0800, ip_dst=10.0.0.2, udp_dst=5001</td>
+                                            <td className="text-[#3b82f6]">OUTPUT:port_2 (s1-eth2 ➔ s2)</td>
+                                            <td className="text-right text-[#aaaaaa]">14,280</td>
+                                            <td className="text-right text-[#aaaaaa]">18.4 MB</td>
+                                            <td className="text-right text-[#777777]">Primary flow h1 ➔ h2</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-[#10b981] font-bold">s2 (Core)</td>
+                                            <td>15</td>
+                                            <td className="text-[#cccccc]">eth_type=0x0800, ip_dst=10.0.0.2, udp_dst=5001</td>
+                                            <td className="text-[#3b82f6]">OUTPUT:port_3 (s2-eth3 ➔ s6)</td>
+                                            <td className="text-right text-[#aaaaaa]">14,278</td>
+                                            <td className="text-right text-[#aaaaaa]">18.4 MB</td>
+                                            <td className="text-right text-[#777777]">P1 transit across bottleneck link</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-[#10b981] font-bold">s2 (Core)</td>
+                                            <td>20</td>
+                                            <td className="text-[#cccccc]">eth_type=0x0800, ip_src=10.0.0.3, ip_dst=10.0.0.4</td>
+                                            <td className="text-[#f59e0b]">OUTPUT:port_3 (s2-eth3 ➔ s6)</td>
+                                            <td className="text-right text-[#aaaaaa]">64,120</td>
+                                            <td className="text-right text-[#aaaaaa]">82.0 MB</td>
+                                            <td className="text-right text-[#777777]">Cross traffic h3 ➔ h4</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-[#10b981] font-bold">s6 (Egress)</td>
+                                            <td>15</td>
+                                            <td className="text-[#cccccc]">eth_type=0x0800, ip_dst=10.0.0.2</td>
+                                            <td className="text-[#10b981]">OUTPUT:port_1 (s6-eth1 ➔ h2)</td>
+                                            <td className="text-right text-[#aaaaaa]">14,278</td>
+                                            <td className="text-right text-[#aaaaaa]">18.4 MB</td>
+                                            <td className="text-right text-[#777777]">Deliver to destination host h2</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-[#888888]">s1, s2, s3, s4, s5, s6</td>
+                                            <td>0</td>
+                                            <td className="text-[#777777]">* (Table-Miss Wildcard)</td>
+                                            <td className="text-[#a855f7]">OUTPUT:CONTROLLER (Port 6653)</td>
+                                            <td className="text-right text-[#aaaaaa]">52</td>
+                                            <td className="text-right text-[#aaaaaa]">3.4 KB</td>
+                                            <td className="text-right text-[#777777]">Default Packet-In dispatch</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
-                        {/* CONTROLLER_STREAM + SCENARIO_PANEL */}
-                        <div style={{ border: '1px solid var(--clr-border)', background: 'var(--clr-bg-panel)', padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <div>
-                                <div style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--clr-text-1)', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>CONTROLLER_STREAM</span>
-                                    <span style={{ color: 'var(--clr-text-3)', fontWeight: 400 }}>PORT:6653</span>
-                                </div>
-                                <div
-                                    tabIndex="0"
-                                    role="region"
-                                    aria-label="Controller event stream"
-                                    style={{ background: 'var(--clr-bg-cell)', border: '1px solid var(--clr-border-faint)', padding: 6, height: 110, overflowY: 'auto', fontSize: 10, fontFamily: 'monospace' }}
-                                >
-                                    {consoleLogs.map((log, i) => (
-                                        <div key={i} style={{ color: 'var(--clr-text-2)', lineHeight: 1.6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            <span style={{ color: 'var(--clr-text-4)' }}>›</span> {log}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, color: 'var(--clr-text-3)', marginBottom: 5 }}>SCENARIO_PROFILES:</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
-                                    {SCENARIOS_LIST.map(sc => (
-                                        <button key={sc.id} onClick={() => handleScenario(sc.id)} style={{
-                                            padding: '4px 2px', fontSize: 9, fontFamily: 'monospace', fontWeight: 700,
-                                            cursor: 'pointer', textAlign: 'center', letterSpacing: '0.03em',
-                                            border: `1px solid ${activeScenario === sc.id ? 'var(--clr-ok)' : 'var(--clr-border)'}`,
-                                            background: activeScenario === sc.id ? 'var(--clr-ok-dim)' : 'var(--clr-bg-base)',
-                                            color: activeScenario === sc.id ? 'var(--clr-ok)' : 'var(--clr-text-3)',
-                                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-                                        }}>{sc.label}</button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </details>
 
                 </div>
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<SDNDashboard />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<SDNMonitorApp />);
     </script>
     {% endraw %}
 </body>

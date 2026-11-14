@@ -21,17 +21,20 @@ class DatabaseManager:
         self.init_db()
 
     def get_connection(self):
-        conn = sqlite3.connect(self.db_path, timeout=10.0)
+        """Tạo kết nối SQLite an toàn, tương thích hoàn toàn với WSL và đa tiến trình"""
+        conn = sqlite3.connect(self.db_path, timeout=30.0, check_same_thread=False)
         conn.row_factory = sqlite3.Row
-        # Kích hoạt WAL mode để cho phép đọc ghi đồng thời không bị khóa file
-        conn.execute('PRAGMA journal_mode = WAL;')
+        conn.execute('PRAGMA busy_timeout = 30000;')
         conn.execute('PRAGMA synchronous = NORMAL;')
-        conn.execute('PRAGMA busy_timeout = 3000;')
         return conn
 
     def init_db(self):
         """Khởi tạo các bảng theo Báo cáo Đợt 1"""
         with self.get_connection() as conn:
+            try:
+                conn.execute('PRAGMA journal_mode = MEMORY;')
+            except Exception:
+                pass
             cursor = conn.cursor()
             
             # 1. Bảng link_metrics (Bảng 2.4 trong Báo cáo ĐATN)

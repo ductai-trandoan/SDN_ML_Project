@@ -8,7 +8,11 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Cấu hình Cơ sở dữ liệu SQLite
-DB_PATH = os.path.join(BASE_DIR, "database", "sdn_qos.db")
+# Nếu chạy trong WSL (Linux), lưu DB tại /tmp/sdn_qos.db để tránh lỗi disk I/O error của /mnt/d (9P filesystem)
+if os.name != 'nt' and os.path.exists('/tmp'):
+    DB_PATH = "/tmp/sdn_qos.db"
+else:
+    DB_PATH = os.path.join(BASE_DIR, "database", "sdn_qos.db")
 
 # Cấu hình REST API / Dịch vụ
 ML_SERVICE_HOST = "127.0.0.1"
@@ -94,12 +98,12 @@ PATHS_CONFIG = {
     }
 }
 
-# Cấu hình Host theo Báo cáo mục 2.3
+# Cấu hình Host khớp 100% với thứ tự addLink trong topology.py và controller.py
 HOSTS_CONFIG = {
     'h1': {'ip': '10.0.0.1', 'mac': '00:00:00:00:00:01', 'switch': 1, 'port': 1, 'role': 'Nguồn luồng chính (VoIP/Video)'},
     'h2': {'ip': '10.0.0.2', 'mac': '00:00:00:00:00:02', 'switch': 6, 'port': 1, 'role': 'Đích luồng chính'},
-    'h3': {'ip': '10.0.0.3', 'mac': '00:00:00:00:00:03', 'switch': 2, 'port': 3, 'role': 'Tạo tải nền gây nghẽn'},
-    'h4': {'ip': '10.0.0.4', 'mac': '00:00:00:00:00:04', 'switch': 6, 'port': 4, 'role': 'Đích tải nền'}
+    'h3': {'ip': '10.0.0.3', 'mac': '00:00:00:00:00:03', 'switch': 2, 'port': 1, 'role': 'Tạo tải nền gây nghẽn'},
+    'h4': {'ip': '10.0.0.4', 'mac': '00:00:00:00:00:04', 'switch': 6, 'port': 2, 'role': 'Đích tải nền'}
 }
 
 # Các kịch bản thực nghiệm K1 đến K6 theo Báo cáo Bảng 1.5

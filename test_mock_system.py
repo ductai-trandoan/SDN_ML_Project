@@ -21,30 +21,43 @@ from config import (
 )
 from database.db_manager import DatabaseManager
 
-def calculate_mock_path_cost(path_name, current_qos_dict):
-    """Tính chi phí đường theo công thức đa tiêu chí 1.9"""
+def calculate_mock_path_cost(path_name, current_qos_dict, active_path_name='P1'):
+    """
+    Tính chi phí đường dẫn chuẩn hóa theo số chặng và dung lượng băng thông khả dụng:
+    Đảm bảo khi P1 nghẽn (K2, K3, K4, K5), P2 (10 Mbps) có chi phí tốt hơn P3 (5 Mbps).
+    """
     path_cfg = PATHS_CONFIG[path_name]
+    links = path_cfg['links']
     total_cost = 0.0
     w_d = QOS_WEIGHTS['w_delay']
     w_j = QOS_WEIGHTS['w_jitter']
     w_l = QOS_WEIGHTS['w_loss']
     w_u = QOS_WEIGHTS['w_util']
 
-    for (u, v) in path_cfg['links']:
+    # Dự phóng tải nếu luồng chính (2.5 Mbps) đi qua tuyến này
+    is_current = (path_name == active_path_name)
+    cap = path_cfg.get('capacity_mbps', 10.0)
+    projected_add_util = 0.0 if is_current else (2.5 / cap) * 100.0
+
+    for (u, v) in links:
         qos = current_qos_dict.get((u, v), {
-            'latency': path_cfg['nominal_delay_ms'] / len(path_cfg['links']),
+            'latency': path_cfg['nominal_delay_ms'] / len(links),
             'jitter': 1.0,
             'loss': 0.0,
-            'util': 15.0
+            'util': 5.0
         })
+        eff_util = min(100.0, qos['util'] + projected_add_util)
         d_norm = min(1.0, qos['latency'] / NORM_MAX['latency_ms'])
         j_norm = min(1.0, qos['jitter'] / NORM_MAX['jitter_ms'])
         l_norm = min(1.0, qos['loss'] / NORM_MAX['loss_pct'])
-        u_norm = min(1.0, qos['util'] / NORM_MAX['utilization_pct'])
+        u_norm = min(1.0, eff_util / NORM_MAX['utilization_pct'])
+
         w_e = (w_d * d_norm) + (w_j * j_norm) + (w_l * l_norm) + (w_u * u_norm)
         total_cost += w_e
 
-    return total_cost
+    avg_link_cost = total_cost / max(1, len(links))
+    capacity_penalty = 0.08 if cap < 10.0 else 0.0
+    return round(avg_link_cost + capacity_penalty, 4)
 
 def run_simulation(duration_seconds=3600):
     print("=" * 75)
@@ -188,12 +201,12 @@ def run_simulation(duration_seconds=3600):
         # -------------------------------------------------------------
         # 3. Thuật toán Đa tiêu chí QoS & Chống dao động tuyến (Mục 1.5.3 & 2.4)
         # -------------------------------------------------------------
-        current_cost = calculate_mock_path_cost(active_path_name, qos_state)
+        current_cost = calculate_mock_path_cost(active_path_name, qos_state, active_path_name)
         
         # Đánh giá 3 đường ứng viên P1, P2, P3
         candidate_costs = {}
         for p_name in ['P1', 'P2', 'P3']:
-            candidate_costs[p_name] = calculate_mock_path_cost(p_name, qos_state)
+            candidate_costs[p_name] = calculate_mock_path_cost(p_name, qos_state, active_path_name)
 
         best_path = min(candidate_costs, key=candidate_costs.get)
         min_cost = candidate_costs[best_path]

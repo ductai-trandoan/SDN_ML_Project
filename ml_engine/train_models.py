@@ -318,8 +318,8 @@ def main():
     print(f">>> Số lượng mẫu huấn luyện: {len(df_train)}")
     print(f">>> Số lượng mẫu kiểm thử:   {len(df_test)}")
 
-    X_train = df_train[FEATURE_COLS]
-    X_test = df_test[FEATURE_COLS]
+    X_train = df_train[FEATURE_COLS].values
+    X_test = df_test[FEATURE_COLS].values
 
     results_dict = {'label_now': [], 'label_pred': []}
 

@@ -99,25 +99,6 @@ export const SDNDashboard: React.FC = () => {
         }).catch(() => {});
 
         setConsoleLogs(prev => [`${new Date().toTimeString().split(' ')[0]} SCENARIO_OVERRIDE ID:${scId}`, ...prev.slice(0, 15)]);
-
-        if (scId === 'K4' || scId === 'K3') {
-            setTimeout(() => {
-                setMetrics(m => ({ ...m, activePath: 'P2', scenario: scId as any }));
-                setDecisionLogs(prev => [
-                    {
-                        id: Date.now(),
-                        timestamp: new Date().toTimeString().split(' ')[0],
-                        type: 'REROUTE',
-                        flow: 'h1->h2',
-                        detail: `LINK_s2_s6 UTIL>85% | REROUTE:P1->P2 | RTT:12ms->30ms | LOSS:0.0%`,
-                        status: 'SUCCESS'
-                    },
-                    ...prev
-                ]);
-            }, 1800);
-        } else if (scId === 'K1') {
-            setMetrics(m => ({ ...m, activePath: 'P1', scenario: 'K1' }));
-        }
     };
 
     const filteredFlows = useMemo(() => {

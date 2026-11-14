@@ -17,11 +17,20 @@ Tuân thủ thiết kế mục 2.3 (Bảng 2.3 & Hình 2.2) trong Báo cáo Đ�
 from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSKernelSwitch
-from mininet.link import TCLink
+from mininet.link import TCLink, TCIntf
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 import sys
 import argparse
+
+# Khử cảnh báo sch_htb của Linux kernel để giao diện dòng lệnh sạch sẽ, dễ nhìn
+_orig_tc = TCIntf.tc
+def _quiet_tc(self, cmd, *args, **kwargs):
+    res = _orig_tc(self, cmd, *args, **kwargs)
+    if res and 'Warning: sch_htb' in res:
+        res = '\n'.join([line for line in res.splitlines() if 'Warning: sch_htb' not in line])
+    return res
+TCIntf.tc = _quiet_tc
 
 class SDNMultipathTopo(Topo):
     """Lớp xây dựng topology mạng 6 switch theo đúng Báo cáo Đợt 1"""
@@ -77,11 +86,11 @@ def run(controller_ip='127.0.0.1', controller_port=6653):
     )
     
     net.start()
-    info("*** Hệ thống mạng giả lập đã sẵn sàng! \n")
-    info("*** Đang kiểm tra kết nối pingall cơ bản...\n")
-    net.pingAll()
-    
-    info("*** Bật giao diện CLI Mininet. Gõ 'exit' để tắt mạng. \n")
+    info("\n=======================================================\n")
+    info("*** HE THONG MANG 6 SWITCH DA KHOI TAO THANH CONG!\n")
+    info("*** GO 'pingall' DE KIEM TRA KET NOI GIUA CAC MAY\n")
+    info("*** GO 'exit' DE THOAT VA DON DEP MANG\n")
+    info("=======================================================\n\n")
     CLI(net)
     
     info("*** Đang dừng Mininet và dọn dẹp các switch ảo...\n")
